@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { Heart } from "lucide-react-native";
+import { FilePlus, Scissors, Combine, FileType } from "lucide-react-native";
+import { Link } from "expo-router";
 
 export default function Index() {
-  const [count, setCount] = useState(0);
-
   return (
     <View
       style={{
@@ -16,17 +14,28 @@ export default function Index() {
         gap: 20,
       }}
     >
-      <Button
-        size="lg"
-        variant="solid"
-        action="primary"
-        onPress={() => setCount(count + 1)}
-      >
-        <Heart size={24} color="white" />
-        <ButtonText>Hello World</ButtonText>
-      </Button>
+      <Text size="2xl" bold>PDF Tailor</Text>
+      
+      <Link href="/split" asChild>
+        <Button size="lg" variant="solid" action="primary">
+          <Scissors size={24} color="white" />
+          <ButtonText>Split PDF</ButtonText>
+        </Button>
+      </Link>
 
-      <Text size="lg">Button clicked: {count} times</Text>
+      <Link href="/merge" asChild>
+        <Button size="lg" variant="solid" action="primary">
+          <Combine size={24} color="white" />
+          <ButtonText>Merge PDFs</ButtonText>
+        </Button>
+      </Link>
+
+      <Link href="/convert" asChild>
+        <Button size="lg" variant="solid" action="primary">
+          <FileType size={24} color="white" />
+          <ButtonText>Convert PDF</ButtonText>
+        </Button>
+      </Link>
     </View>
   );
 }
