@@ -4,11 +4,15 @@ import { Text } from "@/components/ui/text";
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from "react";
 import { FileText } from "lucide-react-native";
+import { PDFViewer } from "@/components/PDFViewer";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Split() {
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const pickDocument = async () => {
+    setIsLoading(true);
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: 'application/pdf',
@@ -16,10 +20,11 @@ export default function Split() {
       
       if (result.assets && result.assets[0]) {
         setSelectedFile(result);
-        // Here we'll add PDF preview functionality later
       }
     } catch (err) {
       console.error('Error picking document:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,10 +47,15 @@ export default function Split() {
         <ButtonText>Select PDF</ButtonText>
       </Button>
 
+      {isLoading && <Spinner size="large" />}
+
       {selectedFile?.assets && (
-        <Text size="md">
-          Selected: {selectedFile.assets[0].name}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text size="md" style={{ marginBottom: 10 }}>
+            Selected: {selectedFile.assets[0].name}
+          </Text>
+          <PDFViewer uri={selectedFile.assets[0].uri} />
+        </View>
       )}
     </View>
   );
