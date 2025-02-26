@@ -57,6 +57,17 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 ### Main Screen
 
 ### Split Screen
+- A button to select the PDF from file system to split
+- After the pdf is loaded, It should show the preview of the pdf
+- After the pdf is loaded, the `Select File` button should become `Select a new file` button
+- The loaded pdf should show the page number at each page
+- Each page of the pdf should be able to select and unselected
+- The selected page should have a green checkmark icon at the corner and the page should be highlighted
+- There should be a button to select all pages and deselect all pages
+- There should be a button to export the selected pages as a new PDF
+- After the export button is clicked, it should allow user to name the new PDF file
+- After the file is exported, it should show the success message
+- After the file is exported, the selection should be cleared
 
 ### Merge Screen
 
