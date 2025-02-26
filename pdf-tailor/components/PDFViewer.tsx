@@ -1,5 +1,5 @@
-import { View, Dimensions } from "react-native";
-import Pdf from 'react-native-pdf';
+import { View, Dimensions, Text } from "react-native";
+import { WebView } from 'react-native-webview';
 import { DocumentPickerAsset } from 'expo-document-picker';
 
 interface PDFViewerProps {
@@ -8,23 +8,27 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ uri, style }: PDFViewerProps) {
-  const source = { uri, cache: true };
+  // Check if the URI is valid
+  if (!uri) {
+    return (
+      <View style={[{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }, style]}>
+        <Text>No PDF document selected</Text>
+      </View>
+    );
+  }
   
   return (
     <View style={[{ flex: 1, width: '100%' }, style]}>
-      <Pdf
-        source={source}
+      <WebView
+        source={{ uri }}
         style={{
           flex: 1,
           width: Dimensions.get('window').width,
           height: Dimensions.get('window').height,
         }}
-        onLoadComplete={(numberOfPages, filePath) => {
-          console.log(`PDF loaded: ${numberOfPages} pages`);
-        }}
-        onError={(error) => {
-          console.error('PDF Error:', error);
-        }}
+        originWhitelist={['*']}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
       />
     </View>
   );

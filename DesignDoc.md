@@ -52,9 +52,20 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
    - Cloud-based conversion API for PDF to Word
    - PDF to PNG conversion using native libraries
 
+## Interface Design
+
+### Main Screen
+
+### Split Screen
+
+### Merge Screen
+
+### Convert Screen
+
+
 ## Implementation Phases
 
-### Phase 1: Basic Setup and PDF Viewing
+### Phase 1: Basic Setup and PDF Viewing (Done✅)
 - Set up Expo project
 - Implement basic navigation
 - Create file picker functionality
@@ -153,3 +164,5 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
    - Apple Developer Account
    - Google Play Developer Account
    - App store listing materials
+
+
