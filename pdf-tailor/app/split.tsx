@@ -71,13 +71,12 @@ export default function Split() {
     try {
       // Get the PDF file as a Uint8Array
       const fileUri = selectedFile.assets[0].uri;
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
       const pdfBytes = await FileSystem.readAsStringAsync(fileUri, {
         encoding: FileSystem.EncodingType.Base64
       });
       
       // Load the PDF document
-      const pdfDoc = await PDFDocument.load(Buffer.from(pdfBytes, 'base64'));
+      const pdfDoc = await PDFDocument.load(pdfBytes);
       
       // Create a new PDF document
       const newPdfDoc = await PDFDocument.create();
@@ -98,6 +97,7 @@ export default function Split() {
         encoding: FileSystem.EncodingType.Base64
       });
       
+      // Show success toast
       toast.show({
         render: () => (
           <Toast action="success">
