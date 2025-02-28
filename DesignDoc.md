@@ -18,11 +18,12 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
    - Combine into single PDF
    - Save merged file to device storage
 
-3. Format Conversion
-   - Convert PDF to Word (.docx)
-   - Convert PDF to images (PNG format)
-   - Preview conversion results
-   - Save converted files to device storage
+3. Scan to PDF
+   - Scan the document using the camera
+   - Use some image processing to improve the quality by shadow removal and crop and rotate the image to get the best result
+   - Save the scanned document as a PDF
+   - Preview the scanned document
+   - Save the scanned document to device storage
 
 ## Technical Architecture
 
@@ -39,18 +40,6 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
    - Page selection interface
    - Progress indicators
    - Success/error notifications
-
-### Backend Services
-1. PDF Processing Libraries
-   - react-native-pdf (PDF viewing)
-   - pdf-lib (PDF manipulation)
-   - expo-file-system (File management)
-   - expo-document-picker (File selection)
-   - expo-sharing (File sharing)
-
-2. Format Conversion Services
-   - Cloud-based conversion API for PDF to Word
-   - PDF to PNG conversion using native libraries
 
 ## Interface Design
 
@@ -71,7 +60,7 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 
 ### Merge Screen
 
-### Convert Screen
+### Scan to PDF Screen
 
 
 ## Implementation Phases
@@ -94,11 +83,12 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 - Develop PDF merging logic
 - Test merge operation
 
-### Phase 4: Format Conversion
-- Integrate conversion services
-- Implement conversion UI
-- Add progress tracking
-- Test conversion features
+### Phase 4: Scan to pdf
+- Implement the scan to pdf functionality
+- Use some image processing to improve the quality by shadow removal and crop and rotate the image to get the best result
+- Save the scanned document as a PDF
+- Preview the scanned document
+- Save the scanned document to device storage
 
 ### Phase 5: Polish and Testing
 - UI/UX improvements
