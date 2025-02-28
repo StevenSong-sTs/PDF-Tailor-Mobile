@@ -10,6 +10,7 @@ import * as FileSystem from 'expo-file-system';
 import { Input, InputField } from "@/components/ui/input";
 import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { PDFDocument } from 'pdf-lib';
+import * as Sharing from 'expo-sharing';
 
 export default function Split() {
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerResult | null>(null);
@@ -60,17 +61,27 @@ export default function Split() {
     setSelectedPages([]);
   };
 
-  const handleExport = () => {
-    setShowExportDialog(true);
+  const areAllPagesSelected = () => {
+    return totalPages > 0 && selectedPages.length === totalPages;
   };
 
-  const exportPDF = async () => {
-    if (selectedPages.length === 0 || !newFileName || !selectedFile?.assets?.[0]) return;
+  const toggleAllPages = () => {
+    if (areAllPagesSelected()) {
+      deselectAllPages();
+    } else {
+      selectAllPages();
+    }
+  };
+
+  const handleExport = async () => {
+    if (selectedPages.length === 0 || !selectedFile?.assets?.[0]) return;
     
     setIsLoading(true);
     try {
       // Get the PDF file as a Uint8Array
       const fileUri = selectedFile.assets[0].uri;
+      const originalFileName = selectedFile.assets[0].name;
+      const baseFileName = originalFileName.replace(/\.pdf$/i, ''); // Remove .pdf extension if present
       const pdfBytes = await FileSystem.readAsStringAsync(fileUri, {
         encoding: FileSystem.EncodingType.Base64
       });
@@ -90,25 +101,36 @@ export default function Split() {
       // Serialize the new PDF document
       const newPdfBytes = await newPdfDoc.saveAsBase64();
       
-      // Save the new PDF document
-      const documentsDir = FileSystem.documentDirectory;
-      const newFilePath = `${documentsDir}${newFileName}${newFileName.endsWith('.pdf') ? '' : '.pdf'}`;
-      await FileSystem.writeAsStringAsync(newFilePath, newPdfBytes, {
+      // Create a temporary file with a name based on the original file
+      const tempFileName = `${baseFileName}_split_${Date.now()}.pdf`;
+      const tempFilePath = `${FileSystem.cacheDirectory}${tempFileName}`;
+      await FileSystem.writeAsStringAsync(tempFilePath, newPdfBytes, {
         encoding: FileSystem.EncodingType.Base64
       });
       
-      // Show success toast
-      toast.show({
-        render: () => (
-          <Toast action="success">
-            <ToastDescription>PDF exported successfully!</ToastDescription>
-          </Toast>
-        )
-      });
-      
-      setSelectedPages([]);
-      setShowExportDialog(false);
-      setNewFileName("");
+      // Share the file, allowing user to choose where to save it
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        setIsLoading(false);
+        await Sharing.shareAsync(tempFilePath, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Save your split PDF',
+          UTI: 'com.adobe.pdf',
+        });
+        
+        // Show success toast
+        toast.show({
+          render: () => (
+            <Toast action="success">
+              <ToastDescription>PDF exported successfully!</ToastDescription>
+            </Toast>
+          )
+        });
+        
+        setSelectedPages([]);
+      } else {
+        throw new Error("Sharing is not available on this platform");
+      }
     } catch (error) {
       console.error("Error exporting PDF:", error);
       toast.show({
@@ -150,12 +172,9 @@ export default function Split() {
             Selected: {selectedFile.assets[0].name}
           </Text>
           
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-            <Button size="sm" onPress={selectAllPages}>
-              <ButtonText>Select All</ButtonText>
-            </Button>
-            <Button size="sm" onPress={deselectAllPages}>
-              <ButtonText>Deselect All</ButtonText>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
+            <Button size="sm" onPress={toggleAllPages}>
+              <ButtonText>{areAllPagesSelected() ? "Deselect All" : "Select All"}</ButtonText>
             </Button>
           </View>
           
@@ -191,47 +210,6 @@ export default function Split() {
               <ButtonText>Export Selected Pages ({selectedPages.length})</ButtonText>
             </Button>
           )}
-        </View>
-      )}
-
-      {showExportDialog && (
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 20,
-        }}>
-          <View style={{
-            backgroundColor: 'white',
-            padding: 20,
-            borderRadius: 10,
-            width: '100%',
-            maxWidth: 400,
-          }}>
-            <Text size="lg" bold style={{ marginBottom: 10 }}>Export PDF</Text>
-            <Input
-              style={{ marginBottom: 15 }}
-            >
-              <InputField
-                placeholder="Enter file name"
-                value={newFileName}
-                onChangeText={setNewFileName}
-              />
-            </Input>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Button variant="outline" onPress={() => setShowExportDialog(false)}>
-                <ButtonText>Cancel</ButtonText>
-              </Button>
-              <Button onPress={exportPDF} disabled={!newFileName || isLoading}>
-                <ButtonText>Export</ButtonText>
-              </Button>
-            </View>
-          </View>
         </View>
       )}
     </View>

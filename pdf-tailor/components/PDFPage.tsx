@@ -34,7 +34,6 @@ export function PDFPage({ uri, pageNumber, isSelected, onPress }: PDFPageProps) 
         ]}
         enablePaging={false}
         onLoadComplete={(numberOfPages, filePath, { width, height }) => {
-          console.log(`PDF loaded: Page ${pageNumber} of ${numberOfPages}, dimensions: ${width}x${height}`);
           setPdfDimensions({ width, height });
         }}
         onError={(error) => {
