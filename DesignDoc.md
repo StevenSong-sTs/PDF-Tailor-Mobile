@@ -59,6 +59,14 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 - After the file is exported, the selection should be cleared
 
 ### Merge Screen
+- A button to add the PDF from file system to merge
+- User can add multiple pdfs to merge
+- For each added pdf, it should be shown as icon of a stack of files with a badge on the top left corner showing the page number and a cross icon to remove the file at the top right corner
+- User can drag each file to reorder the files
+- After user finished its selection and adjustment, there should be a button to show the preview of the merged pdf
+- The preview should show the merged pdf page by page with page number
+- After preview is shown, there should be a button to export the merged pdf
+- The export should follow the same logic as the split screen where we use the share function to export the pdf
 
 ### Scan to PDF Screen
 
