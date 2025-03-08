@@ -30,10 +30,10 @@ export default function Index() {
         </Button>
       </Link>
 
-      <Link href="/convert" asChild>
+      <Link href="/scan" asChild>
         <Button size="lg" variant="solid" action="primary">
           <FileType size={24} color="white" />
-          <ButtonText>Convert PDF</ButtonText>
+          <ButtonText>Scan to PDF</ButtonText>
         </Button>
       </Link>
     </View>

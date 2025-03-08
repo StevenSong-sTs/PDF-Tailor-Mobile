@@ -69,7 +69,24 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 - The export should follow the same logic as the split screen where we use the share function to export the pdf
 
 ### Scan to PDF Screen
+- Implement the scan to pdf functionality
+- The interface should have a border to highlight where the user should scan the document
+- If the user scaned the document at an angle, the app should rotate the image to get the best result
+- The app should make some image processing to enhance the quality of the image
+- After the page is scanned and processed, ask user to confirm if the page is good to use
+- If the user confirm the page is good to use, add the page to the list of pages and continue scanning the next page
+- If the user confirm the page is not good to use, ask user to scan the page again
+- After user scaned all the pages, there should be a button to preview the scanned document
+- Last a button to export the scanned document as pdf same as how split and merge works.
 
+Step to implement the scan to pdf functionality:
+1. Use expo camera to show the camera view in the page with a border to highlight where the user should scan the document
+2. When the physical file's border is detected tocuhing the defined border, the camera should trigger the capture image function
+3. show the captured image to user for confirmation 
+4. if the user confirm the page is good to use, add the page to the list of pages and continue scanning the next page
+6. show the list a small thumnails that user can swap horizontally to see the page they already scaned
+7. A button to preview all the pages
+8. In the preview page, user can export the pdf file as the split and merge functionality.
 
 ## Implementation Phases
 
@@ -79,13 +96,13 @@ PDF Tailor is a cross-platform mobile application built with Expo that allows us
 - Create file picker functionality
 - Implement PDF viewer component
 
-### Phase 2: PDF Splitting
+### Phase 2: PDF Splitting (Done✅)
 - Implement page selection interface
 - Develop PDF splitting logic
 - Add file saving functionality
 - Test split operation
 
-### Phase 3: PDF Merging
+### Phase 3: PDF Merging (Done✅)
 - Create multiple file selection
 - Implement file reordering
 - Develop PDF merging logic

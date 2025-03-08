@@ -29,9 +29,9 @@ export default function Layout() {
           }} 
         />
         <Stack.Screen 
-          name="convert" 
+          name="scan" 
           options={{ 
-            title: "Convert PDF",
+            title: "Scan to PDF",
             presentation: "card"
           }} 
         />
