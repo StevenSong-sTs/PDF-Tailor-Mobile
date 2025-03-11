@@ -6,6 +6,13 @@ import { FileText, Camera as CameraIcon, Check, X } from "lucide-react-native";
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Svg, { Rect, Mask } from 'react-native-svg';
+import {
+  ColorMatrix,
+  concatColorMatrices,
+  grayscale,
+  contrast,
+  brightness
+} from 'react-native-color-matrix-image-filters';
 
 const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
 const CONTAINER_PADDING = 20;
@@ -30,7 +37,7 @@ export default function Scan() {
     
     try {
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
+        quality: 1.0,
       });
       
       // Get the actual image dimensions
@@ -48,23 +55,21 @@ export default function Scan() {
       // Using cameraLayout.width for consistency in height calculation (adjust if needed)
       const cropHeight = Math.floor((cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO) * scaleX);
       
-      // Crop the image using ImageManipulator
-      const manipResult = await ImageManipulator.manipulateAsync(
+      // First crop the image
+      const cropped = await ImageManipulator.manipulateAsync(
         photo.uri,
-        [
-          {
-            crop: {
-              originX: cropX,
-              originY: cropY,
-              width: cropWidth,
-              height: cropHeight,
-            },
+        [{
+          crop: {
+            originX: cropX,
+            originY: cropY,
+            width: cropWidth,
+            height: cropHeight,
           },
-        ],
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        }],
+        { compress: 1 }
       );
 
-      setCapturedImage(manipResult.uri);
+      setCapturedImage(cropped.uri);
     } catch (error) {
       console.error("Error processing image:", error);
     }
@@ -103,11 +108,19 @@ export default function Scan() {
       <View style={styles.container}>
         <Text size="xl" bold style={styles.title}>Review Document</Text>
         <View style={styles.previewContainer}>
-          <Image 
-            source={{ uri: capturedImage }} 
-            style={styles.previewImage} 
-            resizeMode="cover"
-          />
+          <ColorMatrix
+            matrix={concatColorMatrices(
+              grayscale(1),
+              contrast(1.2),
+              brightness(1.1)
+            )}
+          >
+            <Image 
+              source={{ uri: capturedImage }} 
+              style={styles.previewImage} 
+              resizeMode="cover"
+            />
+          </ColorMatrix>
         </View>
         <View style={styles.previewControls}>
           <Button
