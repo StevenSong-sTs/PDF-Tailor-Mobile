@@ -1,4 +1,4 @@
-import { View, StyleSheet, Dimensions, Image, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Dimensions, Image } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useState, useEffect, useRef } from "react";
@@ -7,16 +7,18 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Svg, { Rect, Mask } from 'react-native-svg';
 
+const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
+const CONTAINER_PADDING = 20;
+
 export default function Scan() {
   const [cameraReady, setCameraReady] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [cameraLayout, setCameraLayout] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    // Cleanup on component unmount
     return () => {
-      // Force camera to null on unmount
       if (cameraRef.current) {
         cameraRef.current = null;
       }
@@ -24,22 +26,30 @@ export default function Scan() {
   }, []);
 
   const handleCapture = async () => {
-    if (!cameraRef.current) return;
+    if (!cameraRef.current || cameraLayout.width === 0 || cameraLayout.height === 0) return;
     
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
       });
-
-
-      // Calculate crop dimensions
-      const cropX = photo.width * 0.1;
-      const cropY = photo.height * 0.15;
-      const cropWidth = photo.width * 0.8;
-      const cropHeight = (cropWidth * 11) / 8.5;
-
-      // Create manipulator directly with the photo URI
-      const manipulatorResult = await ImageManipulator.manipulateAsync(
+      
+      // Get the actual image dimensions
+      const imageWidth = photo.width;
+      const imageHeight = photo.height;
+      
+      // Calculate the scale factors between the camera view and the actual image
+      const scaleX = imageWidth / cameraLayout.width;
+      const scaleY = imageHeight / cameraLayout.height;
+      
+      // Calculate crop values in the actual image coordinates based on the camera view layout
+      const cropX = Math.floor((cameraLayout.width * 0.1) * scaleX);
+      const cropY = Math.floor((cameraLayout.height * 0.15) * scaleY);
+      const cropWidth = Math.floor((cameraLayout.width * 0.8) * scaleX);
+      // Using cameraLayout.width for consistency in height calculation (adjust if needed)
+      const cropHeight = Math.floor((cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO) * scaleX);
+      
+      // Crop the image using ImageManipulator
+      const manipResult = await ImageManipulator.manipulateAsync(
         photo.uri,
         [
           {
@@ -47,29 +57,20 @@ export default function Scan() {
               originX: cropX,
               originY: cropY,
               width: cropWidth,
-              height: cropHeight
-            }
+              height: cropHeight,
+            },
           },
-          {
-            resize: {
-              width: 1024
-            }
-          }
         ],
-        {
-          compress: 0.8,
-          format: ImageManipulator.SaveFormat.JPEG
-        }
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      setCapturedImage(manipulatorResult.uri);
+      setCapturedImage(manipResult.uri);
     } catch (error) {
       console.error("Error processing image:", error);
     }
   };
 
   const handleContinue = () => {
-    // In the next step, we'll handle saving this image and continuing with more pages
     console.log("Continue with captured image:", capturedImage);
     setCapturedImage(null);
   };
@@ -79,7 +80,11 @@ export default function Scan() {
   };
 
   if (!permission) {
-    return <View style={styles.container}><Text>Requesting camera permission...</Text></View>;
+    return (
+      <View style={styles.container}>
+        <Text>Requesting camera permission...</Text>
+      </View>
+    );
   }
   
   if (!permission.granted) {
@@ -93,16 +98,17 @@ export default function Scan() {
     );
   }
 
-  // Show image preview if an image is captured
   if (capturedImage) {
     return (
       <View style={styles.container}>
         <Text size="xl" bold style={styles.title}>Review Document</Text>
-        
         <View style={styles.previewContainer}>
-          <Image source={{ uri: capturedImage }} style={styles.previewImage} />
+          <Image 
+            source={{ uri: capturedImage }} 
+            style={styles.previewImage} 
+            resizeMode="cover"
+          />
         </View>
-        
         <View style={styles.previewControls}>
           <Button
             variant="outline"
@@ -113,7 +119,6 @@ export default function Scan() {
             <X size={20} color="red" />
             <ButtonText>Cancel</ButtonText>
           </Button>
-          
           <Button 
             style={styles.previewButton}
             onPress={handleContinue}
@@ -130,13 +135,17 @@ export default function Scan() {
     <View style={styles.container}>
       <Text size="xl" bold style={styles.title}>Scan Document</Text>
       
-      <View style={styles.cameraContainer}>
+      <View 
+        style={styles.cameraContainer}
+        onLayout={(event) => {
+          setCameraLayout(event.nativeEvent.layout);
+        }}
+      >
         <CameraView
           ref={cameraRef}
           style={styles.camera}
           facing="back"
           onCameraReady={() => {
-            console.log("Camera ready");
             setCameraReady(true);
           }}
         >
@@ -145,10 +154,10 @@ export default function Scan() {
               <Mask id="mask">
                 <Rect width="100%" height="100%" fill="white" />
                 <Rect
-                  x={AVAILABLE_WIDTH * 0.1}
-                  y={windowHeight * 0.15}
-                  width={AVAILABLE_WIDTH * 0.8}
-                  height={AVAILABLE_WIDTH * 0.8 / DOCUMENT_ASPECT_RATIO}
+                  x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
+                  y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
+                  width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
+                  height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
                   fill="black"
                 />
               </Mask>
@@ -160,7 +169,17 @@ export default function Scan() {
               />
             </Svg>
           </View>
-          <View style={styles.documentFrame} />
+          <View 
+            style={[
+              styles.documentFrame,
+              {
+                top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
+                left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
+                width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
+                height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
+              }
+            ]}
+          />
         </CameraView>
       </View>
       
@@ -178,15 +197,10 @@ export default function Scan() {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
-const CONTAINER_PADDING = 20; // Match the container padding
-const AVAILABLE_WIDTH = windowWidth - (CONTAINER_PADDING * 2); // Account for padding on both sides
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: CONTAINER_PADDING,
     gap: 20,
   },
   title: {
@@ -203,10 +217,6 @@ const styles = StyleSheet.create({
   },
   documentFrame: {
     position: 'absolute',
-    top: windowHeight * 0.15,
-    left: AVAILABLE_WIDTH * 0.1,
-    width: AVAILABLE_WIDTH * 0.8,
-    height: AVAILABLE_WIDTH * 0.8 / DOCUMENT_ASPECT_RATIO,
     borderWidth: 2,
     borderColor: 'white',
     borderRadius: 8,
@@ -220,10 +230,15 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    maxHeight: Dimensions.get('window').height * 0.5,
   },
   previewImage: {
-    flex: 1,
-    resizeMode: 'contain',
+    width: '100%',
+    height: '100%',
+    aspectRatio: DOCUMENT_ASPECT_RATIO,
   },
   previewControls: {
     flexDirection: 'row',
