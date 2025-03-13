@@ -108,7 +108,7 @@ Step to implement the scan to pdf functionality:
 - Develop PDF merging logic
 - Test merge operation
 
-### Phase 4: Scan to pdf
+### Phase 4: Scan to pdf (Done✅)
 - Implement the scan to pdf functionality
 - Use some image processing to improve the quality by shadow removal and crop and rotate the image to get the best result
 - Save the scanned document as a PDF
