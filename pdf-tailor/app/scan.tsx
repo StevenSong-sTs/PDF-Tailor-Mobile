@@ -1,8 +1,8 @@
 import { View, StyleSheet, Dimensions, Image } from "react-native";
+import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useState, useEffect, useRef } from "react";
-import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2 } from "lucide-react-native";
+import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown } from "lucide-react-native";
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Svg, { Rect, Mask } from 'react-native-svg';
@@ -17,6 +17,10 @@ import ViewShot, { ViewShotProperties } from "react-native-view-shot";
 import * as FileSystem from 'expo-file-system';
 import { GestureHandlerRootView, TouchableOpacity, Swipeable, RectButton } from 'react-native-gesture-handler';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
+import * as Sharing from 'expo-sharing';
+import { PDFDocument } from 'pdf-lib';
+import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
+import { Spinner } from '@/components/ui/spinner';
 
 const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
 const CONTAINER_PADDING = 20;
@@ -30,6 +34,8 @@ export default function Scan() {
   const [scannedPages, setScannedPages] = useState<Array<{ id: string, uri: string }>>([]);
   const viewShotRef = useRef<ViewShot & { capture: () => Promise<string> }>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     return () => {
@@ -119,6 +125,77 @@ export default function Scan() {
     setScannedPages(prev => prev.filter(page => page.id !== id));
   };
 
+  const handleExport = async () => {
+    if (scannedPages.length === 0) return;
+    
+    setIsExporting(true);
+    try {
+      // Create a new PDF document
+      const pdfDoc = await PDFDocument.create();
+      
+      // Add each scanned image as a page
+      for (const pageItem of scannedPages) {
+        const imageBytes = await FileSystem.readAsStringAsync(pageItem.uri, {
+          encoding: FileSystem.EncodingType.Base64
+        });
+        
+        // Convert JPEG to PDF page
+        const jpgImage = await pdfDoc.embedJpg(imageBytes);
+        const jpgDims = jpgImage.scale(1);
+        
+        // Add a page with the same dimensions as the image
+        const pdfPage = pdfDoc.addPage([jpgDims.width, jpgDims.height]);
+        pdfPage.drawImage(jpgImage, {
+          x: 0,
+          y: 0,
+          width: jpgDims.width,
+          height: jpgDims.height,
+        });
+      }
+      
+      // Save the PDF
+      const pdfBytes = await pdfDoc.saveAsBase64();
+      
+      // Write to a temporary file
+      const tempFileName = `scanned_document_${Date.now()}.pdf`;
+      const tempFilePath = `${FileSystem.cacheDirectory}${tempFileName}`;
+      await FileSystem.writeAsStringAsync(tempFilePath, pdfBytes, {
+        encoding: FileSystem.EncodingType.Base64
+      });
+      
+      // Share the file
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(tempFilePath, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Save your scanned PDF',
+          UTI: 'com.adobe.pdf',
+        });
+        
+        toast.show({
+          render: () => (
+            <Toast action="success">
+              <ToastDescription>PDF exported successfully!</ToastDescription>
+            </Toast>
+          )
+        });
+      } else {
+        throw new Error("Sharing is not available on this platform");
+      }
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast.show({
+        render: () => (
+          <Toast action="error">
+            <ToastDescription>Failed to export PDF. Please try again.</ToastDescription>
+          </Toast>
+        )
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const renderScannedPage = ({ item, drag, isActive }: { 
     item: { id: string, uri: string }; 
     drag: () => void; 
@@ -192,13 +269,29 @@ export default function Scan() {
         <View style={styles.container}>
           <View style={styles.previewHeader}>
             <Text size="xl" bold>Scanned Pages</Text>
-            <Button 
-              size="sm" 
-              onPress={() => setShowPreview(false)}
-              variant="link"
-            >
-              <ButtonText>Back to Camera</ButtonText>
-            </Button>
+            <View style={styles.previewHeaderButtons}>
+              <Button 
+                size="sm" 
+                onPress={() => setShowPreview(false)}
+                variant="link"
+              >
+                <ButtonText>Back to Camera</ButtonText>
+              </Button>
+              <Button
+                size="sm"
+                onPress={handleExport}
+                disabled={isExporting || scannedPages.length === 0}
+              >
+                {isExporting ? (
+                  <Spinner size="small" />
+                ) : (
+                  <>
+                    <FileDown size={20} color="white" />
+                    <ButtonText>Export PDF</ButtonText>
+                  </>
+                )}
+              </Button>
+            </View>
           </View>
 
           <Text size="sm" style={styles.instructions}>
@@ -466,5 +559,10 @@ const styles = StyleSheet.create({
   },
   svgOverlay: {
     flex: 1,
+  },
+  previewHeaderButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
   },
 });
