@@ -11,7 +11,8 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { PDFDocument } from 'pdf-lib';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView, TouchableOpacity, Swipeable, RectButton } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
+import SwipeableItem, { useSwipeableItemParams } from 'react-native-swipeable-item';
 import { PDFViewer } from "@/components/PDFViewer";
 
 // Interface to represent a PDF file in our merge list
@@ -167,26 +168,34 @@ export default function Merge() {
     }
   };
 
+  const UnderlayLeft = ({ onDelete, id }: { onDelete: (id: string) => void, id: string }) => {
+    const { close } = useSwipeableItemParams<PDFFile>();
+    return (
+      <View style={styles.deleteButton}>
+        <TouchableOpacity 
+          onPress={() => {
+            onDelete(id);
+            close();
+          }}
+        >
+          <Trash2 size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderPDFFile = ({ item, drag, isActive }: { 
     item: PDFFile; 
     drag: () => void; 
     isActive: boolean 
   }) => {
-    // Create renderRightActions function for swipe delete
-    const renderRightActions = (progress: any) => {
-      return (
-        <RectButton style={styles.deleteButton} onPress={() => removeFile(item.id)}>
-          <Trash2 size={24} color="white" />
-        </RectButton>
-      );
-    };
-    
     return (
       <ScaleDecorator activeScale={0.95}>
-        <Swipeable
-          renderRightActions={renderRightActions}
-          friction={2}
-          overshootRight={false}
+        <SwipeableItem
+          key={item.id}
+          item={item}
+          renderUnderlayLeft={() => <UnderlayLeft onDelete={removeFile} id={item.id} />}
+          snapPointsLeft={[80]}
         >
           <View
             style={[
@@ -212,7 +221,7 @@ export default function Merge() {
               </View>
             </TouchableOpacity>
           </View>
-        </Swipeable>
+        </SwipeableItem>
       </ScaleDecorator>
     );
   };
@@ -280,13 +289,7 @@ export default function Merge() {
                     data={selectedFiles}
                     keyExtractor={(item) => item.id}
                     renderItem={renderPDFFile}
-                    onDragEnd={({ data }) => {
-                      setSelectedFiles(data);
-                      // Force refresh to reset any lingering visual states
-                      setTimeout(() => {
-                        setSelectedFiles([...data]);
-                      }, 100);
-                    }}
+                    onDragEnd={({ data }) => {setSelectedFiles(data);}}
                     horizontal={false}
                     numColumns={1}
                     contentContainerStyle={styles.fileList}
@@ -407,5 +410,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 80,
     height: '100%',
+    position: 'absolute',
+    right: 0,
   },
 });
