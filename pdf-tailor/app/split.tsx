@@ -1,9 +1,8 @@
-import { View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from "react";
-import { FileText, Check, CheckCircle2, ArrowLeft, ScissorsLineDashed } from "lucide-react-native";
+import { FileText, CheckCircle2, ArrowLeft, ScissorsLineDashed } from "lucide-react-native";
 import { PDFViewer } from "@/components/PDFViewer";
 import { Spinner } from "@/components/ui/spinner";
 import * as FileSystem from 'expo-file-system';
@@ -15,14 +14,17 @@ import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { PDFDocument } from 'pdf-lib';
 import * as Sharing from 'expo-sharing';
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {useFonts, Orbitron_600SemiBold} from "@expo-google-fonts/orbitron"
 
 export default function Split() {
+  const [titleFontLoaded] = useFonts({
+    Orbitron_600SemiBold,
+  });
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [newFileName, setNewFileName] = useState("");
   const toast = useToast();
 
   const pickDocument = async () => {
@@ -34,7 +36,6 @@ export default function Split() {
       });
       
       if (result.assets && result.assets[0]) {
-        console.log("Selected file:", result.assets[0].uri);
         setSelectedFile(result);
         setSelectedPages([]);
       }
@@ -121,17 +122,6 @@ export default function Split() {
           dialogTitle: 'Save your split PDF',
           UTI: 'com.adobe.pdf',
         });
-        
-        // Show success toast
-        toast.show({
-          render: () => (
-            <Toast action="success">
-              <ToastDescription>PDF exported successfully!</ToastDescription>
-            </Toast>
-          )
-        });
-        
-        setSelectedPages([]);
       } else {
         throw new Error("Sharing is not available on this platform");
       }
@@ -150,123 +140,133 @@ export default function Split() {
   };
 
   return (
-    <Box className="flex-1 bg-background-50">
-      {/* Header */}
-      <Box className="p-4 bg-background-100 pt-16">
-        <Box className="flex-row items-center justify-between mb-4">
-          <Button
-            size="sm"
-            variant="link"
-            onPress={() => router.back()}
-            className="self-start"
-          >
-            <ArrowLeft size={24} color="#64748b" />
-            <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
-          </Button>
-          <Heading size="2xl">Split PDF</Heading>
-          <Box className="w-20">
-            <Text className="hidden">Spacer for centering</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+      <Box className="flex-1 bg-background-50">
+        {/* Header */}
+        <Box className="p-4 bg-background-100">
+          <Box className="flex-row items-center justify-between mb-2">
+            <Button
+              size="sm"
+              variant="link"
+              onPress={() => router.back()}
+              className="self-start"
+            >
+              <ArrowLeft size={24} color="#64748b" />
+              <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+            </Button>
+            <Heading 
+              size="2xl" 
+              style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+            >
+              Split PDF
+            </Heading>
+            <Box className="w-20">
+              <Text className="hidden">Spacer for centering</Text>
+            </Box>
           </Box>
+          <Text className="text-gray-600 text-center">Split a PDF into multiple files</Text>
         </Box>
-        <Text className="text-gray-600 text-center">Select pages to create a new PDF document</Text>
-      </Box>
 
-      <Box className="p-6 flex-1 bg-background-50">
-        {!selectedFile ? (
-          <Card 
-            size="md" 
-            variant="elevated" 
-            className="bg-white p-6 rounded-2xl items-center justify-center"
-          >
-            <VStack space="md" className="items-center">
-              <Box className="w-16 h-16 rounded-full bg-background-100 items-center justify-center mb-4">
-                <ScissorsLineDashed size={32} color="#64748b" />
-              </Box>
-              <Text className="text-gray-600 text-center mb-4">
-                Start by selecting a PDF file to split
-              </Text>
-              <Button 
-                size="lg" 
-                variant="solid"
-                action="primary"
-                className="rounded-xl"
-                onPress={pickDocument}
-              >
-                <FileText size={24} />
-                <ButtonText className="ml-2">Select PDF</ButtonText>
-              </Button>
-            </VStack>
-          </Card>
-        ) : (
-          <VStack space="md" className="flex-1">
-            <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
-              <Text size="md" className="text-gray-600">
-                Selected: {selectedFile?.assets?.[0].name}
-              </Text>
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="self-start mt-2"
-                onPress={pickDocument}
-              >
-                <ButtonText>Change File</ButtonText>
-              </Button>
-            </Card>
-
-            <Box className="flex-row justify-between mb-2">
-              <Button 
-                size="sm" 
-                variant="outline"
-                onPress={toggleAllPages}
-                className="rounded-lg"
-              >
-                <ButtonText>{areAllPagesSelected() ? "Deselect All" : "Select All"}</ButtonText>
-              </Button>
-              
-              {selectedPages.length > 0 && (
-                <Text className="text-gray-600">
-                  {selectedPages.length} pages selected
-                </Text>
-              )}
-            </Box>
-
-            <Box className="flex-1 bg-white rounded-xl overflow-hidden">
-              {isLoading ? (
-                <Box className="flex-1 items-center justify-center">
-                  <Spinner size="large" />
+        <Box className="p-6 flex-1 bg-background-50">
+          {!selectedFile ? (
+            <Card 
+              size="md" 
+              variant="elevated" 
+              className="bg-white p-6 rounded-2xl items-center justify-center"
+            >
+              <VStack space="md" className="items-center">
+                <Box className="w-16 h-16 rounded-full bg-background-100 items-center justify-center">
+                  <ScissorsLineDashed size={32} color="#64748b" />
                 </Box>
-              ) : selectedFile?.assets?.[0]?.uri ? (
-                <PDFViewer 
-                  uri={selectedFile.assets[0].uri} 
-                  onPageCountChange={setTotalPages}
-                  renderPageIndicator={(pageNumber) => (
-                    <Box className="absolute top-2 right-2 flex-row items-center bg-white/70 px-3 py-1 rounded-full">
-                      <Text className="text-gray-600">Page {pageNumber}</Text>
-                      {selectedPages.includes(pageNumber) && (
-                        <CheckCircle2 size={20} color="green" style={{ marginLeft: 5 }} />
-                      )}
-                    </Box>
-                  )}
-                  onPagePress={togglePageSelection}
-                  highlightedPages={selectedPages}
-                />
-              ) : null}
-            </Box>
+                <Text className="text-gray-600 text-center mb-4">
+                  Start by importing a PDF file
+                </Text>
+                <Button 
+                  size="lg" 
+                  variant="solid"
+                  action="primary"
+                  className="rounded-xl"
+                  onPress={pickDocument}
+                >
+                  <FileText size={24} />
+                  <ButtonText className="ml-2">Import PDF</ButtonText>
+                </Button>
+              </VStack>
+            </Card>
+          ) : (
+            <VStack space="md" className="flex-1">
+              <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                <Box className="flex-row justify-between items-center space-x-2">
+                  <Box className="flex-1">
+                    <Text size="md" className="text-gray-600 truncate">
+                      Selected: {selectedFile?.assets?.[0].name}
+                    </Text>
+                  </Box>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="rounded-lg shrink-0"
+                    onPress={pickDocument}
+                  >
+                    <ButtonText>Change File</ButtonText>
+                  </Button>
+                </Box>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="self-start mt-2"
+                  onPress={toggleAllPages}
+                >
+                  <ButtonText>{areAllPagesSelected() ? "Deselect All Pages" : "Select All Pages"}</ButtonText>
+                </Button>
+              </Card>
 
-            {selectedPages.length > 0 && (
-              <Button 
-                size="lg"
-                variant="solid"
-                action="primary"
-                className="rounded-xl"
-                onPress={handleExport}
-              >
-                <ButtonText>Export {selectedPages.length} Pages</ButtonText>
-              </Button>
-            )}
-          </VStack>
-        )}
+              <Box className="flex-row justify-end mb-2">
+                {selectedPages.length > 0 && (
+                  <Text className="text-gray-600">
+                    {selectedPages.length} pages selected
+                  </Text>
+                )}
+              </Box>
+
+              <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+                {isLoading ? (
+                  <Box className="flex-1 items-center justify-center">
+                    <Spinner size="large" />
+                  </Box>
+                ) : selectedFile?.assets?.[0]?.uri ? (
+                  <PDFViewer 
+                    uri={selectedFile.assets[0].uri} 
+                    onPageCountChange={setTotalPages}
+                    renderPageIndicator={(pageNumber) => (
+                      <Box className="absolute top-2 right-2 flex-row items-center bg-white/70 px-3 py-1 rounded-full">
+                        <Text className="text-gray-600">Page {pageNumber}</Text>
+                        {selectedPages.includes(pageNumber) && (
+                          <CheckCircle2 size={20} color="green" style={{ marginLeft: 5 }} />
+                        )}
+                      </Box>
+                    )}
+                    onPagePress={togglePageSelection}
+                    highlightedPages={selectedPages}
+                  />
+                ) : null}
+              </Box>
+
+              {selectedPages.length > 0 && (
+                <Button 
+                  size="lg"
+                  variant="solid"
+                  action="primary"
+                  className="rounded-xl"
+                  onPress={handleExport}
+                >
+                  <ButtonText>Export {selectedPages.length} Pages</ButtonText>
+                </Button>
+              )}
+            </VStack>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 }

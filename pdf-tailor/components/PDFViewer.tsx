@@ -33,8 +33,6 @@ export function PDFViewer({
       setError(null);
       
       try {
-        console.log("Loading PDF from URI:", uri);
-        
         // Get PDF data
         const pdfBytes = await FileSystem.readAsStringAsync(uri, {
           encoding: FileSystem.EncodingType.Base64
@@ -44,7 +42,6 @@ export function PDFViewer({
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const count = pdfDoc.getPageCount();
         
-        console.log("PDF page count:", count);
         setPageCount(count);
         onPageCountChange?.(count);
         setLoading(false);
