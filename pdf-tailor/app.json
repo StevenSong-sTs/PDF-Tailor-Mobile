@@ -56,7 +56,8 @@
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to save scanned documents."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
