@@ -4,7 +4,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import * as DocumentPicker from 'expo-document-picker';
 import { useState, useRef } from "react";
-import { FileText, X, Eye, FileDown, Trash2 } from "lucide-react-native";
+import { FileText, X, Eye, FileDown, Trash2, ArrowLeft } from "lucide-react-native";
 import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
 import * as FileSystem from 'expo-file-system';
@@ -14,6 +14,13 @@ import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatli
 import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
 import SwipeableItem, { useSwipeableItemParams } from 'react-native-swipeable-item';
 import { PDFViewer } from "@/components/PDFViewer";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import {useFonts, Orbitron_600SemiBold} from "@expo-google-fonts/orbitron";
 
 // Interface to represent a PDF file in our merge list
 interface PDFFile {
@@ -29,6 +36,9 @@ export default function Merge() {
   const [showPreview, setShowPreview] = useState(false);
   const [mergedPdfUri, setMergedPdfUri] = useState<string | null>(null);
   const toast = useToast();
+  const [titleFontLoaded] = useFonts({
+    Orbitron_600SemiBold,
+  });
 
   const pickDocument = async () => {
     try {
@@ -144,15 +154,6 @@ export default function Merge() {
           dialogTitle: 'Save your merged PDF',
           UTI: 'com.adobe.pdf',
         });
-        
-        // Show success toast
-        toast.show({
-          render: () => (
-            <Toast action="success">
-              <ToastDescription>PDF merged and exported successfully!</ToastDescription>
-            </Toast>
-          )
-        });
       } else {
         throw new Error("Sharing is not available on this platform");
       }
@@ -171,16 +172,19 @@ export default function Merge() {
   const UnderlayLeft = ({ onDelete, id }: { onDelete: (id: string) => void, id: string }) => {
     const { close } = useSwipeableItemParams<PDFFile>();
     return (
-      <View style={styles.deleteButton}>
-        <TouchableOpacity 
+      <Box className="absolute right-0 h-full justify-center">
+        <Button
+          variant="solid"
+          action="negative"
+          className="h-20 w-20 rounded-lg"
           onPress={() => {
             onDelete(id);
             close();
           }}
         >
-          <Trash2 size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+          <Trash2 size={20} color="white" />
+        </Button>
+      </Box>
     );
   };
 
@@ -227,106 +231,163 @@ export default function Merge() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <Text size="xl" bold>Merge PDF</Text>
-        
-        {showPreview && mergedPdfUri ? (
-          <View style={styles.previewContainer}>
-            <View style={styles.previewHeader}>
-              <Text size="lg" bold>Preview</Text>
-              <Button 
-                size="sm" 
-                onPress={() => setShowPreview(false)}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
                 variant="link"
+                onPress={() => router.back()}
+                className="self-start"
               >
-                <ButtonText>Back</ButtonText>
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
               </Button>
-            </View>
-            
-            <PDFViewer 
-              uri={mergedPdfUri} 
-              renderPageIndicator={(pageNumber) => (
-                <View style={styles.pageIndicator}>
-                  <Text>Page {pageNumber}</Text>
-                </View>
-              )}
-            />
-            
-            <Button 
-              size="lg" 
-              onPress={exportMergedPdf}
-              style={styles.exportButton}
-            >
-              <FileDown size={24} />
-              <ButtonText>Export Merged PDF</ButtonText>
-            </Button>
-          </View>
-        ) : (
-          <>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              onPress={pickDocument}
-            >
-              <FileText size={24} />
-              <ButtonText>Add PDF to Merge</ButtonText>
-            </Button>
-            
-            {isLoading && <Spinner size="large" />}
-            
-            {selectedFiles.length > 0 && (
-              <>
-                <Text size="md" style={styles.sectionTitle}>
-                  Files to merge ({selectedFiles.length})
-                </Text>
-                <Text size="sm" style={styles.instructions}>
-                  Long press and drag to reorder files
-                </Text>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Merge PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
+              </Box>
+            </Box>
+            <Text className="text-gray-600 text-center">Combine multiple PDFs into one file</Text>
+          </Box>
+
+          <Box className="p-6 flex-1 bg-background-50">
+            {showPreview && mergedPdfUri ? (
+              <VStack space="md" className="flex-1">
+                <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                  <Box className="flex-row justify-between items-center">
+                    <Text size="lg" bold>Preview</Text>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="rounded-lg"
+                      onPress={() => setShowPreview(false)}
+                    >
+                      <ButtonText>Back</ButtonText>
+                    </Button>
+                  </Box>
+                </Card>
                 
-                <View style={styles.fileListContainer}>
-                  <DraggableFlatList
-                    data={selectedFiles}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderPDFFile}
-                    onDragEnd={({ data }) => {setSelectedFiles(data);}}
-                    horizontal={false}
-                    numColumns={1}
-                    contentContainerStyle={styles.fileList}
-                    activationDistance={10}
-                    dragItemOverflow={true}
+                <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+                  <PDFViewer 
+                    uri={mergedPdfUri} 
+                    renderPageIndicator={(pageNumber) => (
+                      <Box className="absolute top-2 right-2 bg-white/70 px-3 py-1 rounded-full">
+                        <Text className="text-gray-600">Page {pageNumber}</Text>
+                      </Box>
+                    )}
                   />
-                </View>
+                </Box>
                 
                 <Button 
                   size="lg" 
-                  onPress={previewMergedPdf}
-                  style={styles.previewButton}
+                  variant="solid"
+                  action="primary"
+                  className="rounded-xl"
+                  onPress={exportMergedPdf}
                 >
-                  <Eye size={24} />
-                  <ButtonText>Preview Merged PDF</ButtonText>
+                  <FileDown size={24} />
+                  <ButtonText>Export Merged PDF</ButtonText>
                 </Button>
-              </>
+              </VStack>
+            ) : (
+              <VStack space="md" className="flex-1">
+                {selectedFiles.length === 0 ? (
+                  <Card 
+                    size="md" 
+                    variant="elevated" 
+                    className="bg-white p-6 rounded-2xl items-center justify-center"
+                  >
+                    <VStack space="md" className="items-center">
+                      <Box className="w-16 h-16 rounded-full bg-background-100 items-center justify-center">
+                        <FileText size={32} color="#64748b" />
+                      </Box>
+                      <Text className="text-gray-600 text-center mb-4">
+                        Start by adding PDF files to merge
+                      </Text>
+                      <Button 
+                        size="lg" 
+                        variant="solid"
+                        action="primary"
+                        className="rounded-xl"
+                        onPress={pickDocument}
+                      >
+                        <FileText size={24} />
+                        <ButtonText className="ml-2">Add PDF to Merge</ButtonText>
+                      </Button>
+                    </VStack>
+                  </Card>
+                ) : (
+                  <>
+                    <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                      <Box className="flex-row justify-between items-center">
+                        <Text size="md" className="text-gray-600">
+                          Files to merge ({selectedFiles.length})
+                        </Text>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="rounded-lg"
+                          onPress={pickDocument}
+                        >
+                          <ButtonText>Add More</ButtonText>
+                        </Button>
+                      </Box>
+                      <Text size="sm" className="text-gray-500 mt-2 italic">
+                        Long press and drag to reorder files
+                      </Text>
+                    </Card>
+
+                    <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+                      <DraggableFlatList
+                        data={selectedFiles}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderPDFFile}
+                        onDragEnd={({ data }) => {setSelectedFiles(data);}}
+                        horizontal={false}
+                        numColumns={1}
+                        contentContainerStyle={[styles.fileList, { padding: 16 }]}
+                        activationDistance={10}
+                        dragItemOverflow={true}
+                      />
+                    </Box>
+
+                    <Button 
+                      size="lg"
+                      variant="solid"
+                      action="primary"
+                      className="rounded-xl"
+                      onPress={previewMergedPdf}
+                    >
+                      <Eye size={24} />
+                      <ButtonText>Preview Merged PDF</ButtonText>
+                    </Button>
+                  </>
+                )}
+                {isLoading && (
+                  <Box className="absolute inset-0 bg-black/10 items-center justify-center">
+                    <Spinner size="large" />
+                  </Box>
+                )}
+              </VStack>
             )}
-          </>
-        )}
-      </View>
-    </GestureHandlerRootView>
+          </Box>
+        </Box>
+      </GestureHandlerRootView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 20,
-  },
-  fileListContainer: {
-    flex: 1,
-    width: '100%',
-  },
   fileList: {
-    paddingVertical: 10,
     width: '100%',
   },
   fileItem: {
@@ -335,6 +396,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: '#f8f8f8',
     borderRadius: 8,
+    overflow: 'hidden',
   },
   fileContent: {
     width: '100%',
@@ -372,45 +434,5 @@ const styles = StyleSheet.create({
   fileName: {
     fontSize: 14,
     flex: 1,
-  },
-  sectionTitle: {
-    marginTop: 10,
-    fontWeight: 'bold',
-  },
-  instructions: {
-    fontStyle: 'italic',
-    color: '#666',
-  },
-  previewButton: {
-    marginTop: 10,
-  },
-  previewContainer: {
-    flex: 1,
-  },
-  previewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  pageIndicator: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    padding: 5,
-    borderRadius: 5,
-  },
-  exportButton: {
-    marginTop: 10,
-  },
-  deleteButton: {
-    backgroundColor: '#FF3B30',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    height: '100%',
-    position: 'absolute',
-    right: 0,
   },
 });
