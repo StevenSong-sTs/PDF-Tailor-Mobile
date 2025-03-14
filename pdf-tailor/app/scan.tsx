@@ -2,7 +2,7 @@ import { View, StyleSheet, Dimensions, Image } from "react-native";
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown } from "lucide-react-native";
+import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown, ArrowLeft } from "lucide-react-native";
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Svg, { Rect, Mask } from 'react-native-svg';
@@ -21,11 +21,21 @@ import * as Sharing from 'expo-sharing';
 import { PDFDocument } from 'pdf-lib';
 import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { Spinner } from '@/components/ui/spinner';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
+import {useFonts, Orbitron_600SemiBold} from "@expo-google-fonts/orbitron";
+import { useRouter } from "expo-router";
 
 const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
 const CONTAINER_PADDING = 20;
 
 export default function Scan() {
+  const [titleFontLoaded] = useFonts({
+    Orbitron_600SemiBold,
+  });
   const [cameraReady, setCameraReady] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
@@ -36,6 +46,7 @@ export default function Scan() {
   const [showPreview, setShowPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const toast = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -203,9 +214,16 @@ export default function Scan() {
   }) => {
     const renderRightActions = () => {
       return (
-        <RectButton style={styles.deleteButton} onPress={() => removePage(item.id)}>
-          <Trash2 size={24} color="white" />
-        </RectButton>
+        <Box className="h-[82px] flex items-center my-16 mr-4">
+          <Button
+            variant="solid"
+            action="negative"
+            className="w-20 h-36 rounded-lg justify-center"
+            onPress={() => removePage(item.id)}
+          >
+            <Trash2 size={20} color="white" />
+          </Button>
+        </Box>
       );
     };
     
@@ -265,186 +283,292 @@ export default function Scan() {
 
   if (showPreview) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.previewHeader}>
-            <Text size="xl" bold>Scanned Pages</Text>
-            <View style={styles.previewHeaderButtons}>
-              <Button 
-                size="sm" 
-                onPress={() => setShowPreview(false)}
-                variant="link"
-              >
-                <ButtonText>Back to Camera</ButtonText>
-              </Button>
-              <Button
-                size="sm"
-                onPress={handleExport}
-                disabled={isExporting || scannedPages.length === 0}
-              >
-                {isExporting ? (
-                  <Spinner size="small" />
-                ) : (
-                  <>
-                    <FileDown size={20} color="white" />
-                    <ButtonText>Export PDF</ButtonText>
-                  </>
-                )}
-              </Button>
-            </View>
-          </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Box className="flex-1 bg-background-50">
+            {/* Header */}
+            <Box className="p-4 bg-background-100">
+              <Box className="flex-row items-center justify-between mb-2">
+                <Button
+                  size="sm"
+                  variant="link"
+                  onPress={() => router.back()}
+                  className="self-start"
+                >
+                  <ArrowLeft size={24} color="#64748b" />
+                  <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+                </Button>
+                <Heading 
+                  size="2xl" 
+                  style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+                >
+                  Scan PDF
+                </Heading>
+                <Box className="w-20">
+                  <Text className="hidden">Spacer for centering</Text>
+                </Box>
+              </Box>
+              <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
+            </Box>
 
-          <Text size="sm" style={styles.instructions}>
-            Long press and drag to reorder pages
-          </Text>
-          
-          <View style={styles.pageListContainer}>
-            <DraggableFlatList
-              data={scannedPages}
-              keyExtractor={(item) => item.id}
-              renderItem={renderScannedPage}
-              onDragEnd={({ data }) => setScannedPages(data)}
-              horizontal={false}
-              numColumns={1}
-              contentContainerStyle={styles.pageList}
-              activationDistance={10}
-              dragHitSlop={{ top: 0, bottom: 0, left: 0, right: 0 }}
-            />
-          </View>
-        </View>
-      </GestureHandlerRootView>
+            <Box className="p-6 flex-1 bg-background-50">
+              <VStack space="md" className="flex-1">
+                <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                  <Box className="flex-row justify-between items-center">
+                    <Box className="flex-1">
+                      <Text size="sm" className="text-gray-500 italic">
+                        Hold and drag to reorder. Swipe left to remove.
+                      </Text>
+                    </Box>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="rounded-lg ml-4 shrink-0"
+                      onPress={() => setShowPreview(false)}
+                    >
+                      <ButtonText>Back to Camera</ButtonText>
+                    </Button>
+                  </Box>
+                </Card>
+
+                <Box className="flex-1">
+                  <DraggableFlatList
+                    data={scannedPages}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderScannedPage}
+                    onDragEnd={({ data }) => setScannedPages(data)}
+                    contentContainerStyle={{ padding: 16 }}
+                  />
+                </Box>
+
+                <Button
+                  size="lg"
+                  variant="solid"
+                  action="primary"
+                  className="rounded-xl"
+                  onPress={handleExport}
+                  disabled={isExporting || scannedPages.length === 0}
+                >
+                  {isExporting ? (
+                    <Spinner size="small" />
+                  ) : (
+                    <>
+                      <FileDown size={24} color="white" />
+                      <ButtonText>Export PDF</ButtonText>
+                    </>
+                  )}
+                </Button>
+              </VStack>
+            </Box>
+          </Box>
+        </GestureHandlerRootView>
+      </SafeAreaView>
     );
   }
 
   if (capturedImage) {
     return (
-      <View style={styles.container}>
-        <Text size="xl" bold style={styles.title}>Review Document</Text>
-        <View style={styles.previewContainer}>
-          <ViewShot
-            ref={viewShotRef}
-            options={{
-              format: "jpg",
-              quality: 0.9,
-            }}
-          >
-            <ColorMatrix
-              matrix={concatColorMatrices(
-                grayscale(1),
-                contrast(1.2),
-                brightness(1.1)
-              )}
-            >
-              <Image 
-                source={{ uri: capturedImage }} 
-                style={styles.previewImage} 
-                resizeMode="cover"
-              />
-            </ColorMatrix>
-          </ViewShot>
-        </View>
-        <View style={styles.previewControls}>
-          <Button
-            variant="outline"
-            action="negative"
-            style={styles.previewButton} 
-            onPress={handleCancel}
-          >
-            <X size={20} color="red" />
-            <ButtonText>Cancel</ButtonText>
-          </Button>
-          <Button 
-            style={styles.previewButton}
-            onPress={handleContinue}
-          >
-            <Check size={20} color="white" />
-            <ButtonText>Continue</ButtonText>
-          </Button>
-        </View>
-        
-        {/* Debug view to show number of scanned pages */}
-        <Text>Scanned pages: {scannedPages.length}</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
+                variant="link"
+                onPress={() => router.back()}
+                className="self-start"
+              >
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+              </Button>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Scan PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
+              </Box>
+            </Box>
+            <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
+          </Box>
+
+          <Box className="p-6 flex-1 bg-background-50">
+            <VStack space="md" className="flex-1">
+              <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                <Text size="lg" bold>Review Document</Text>
+              </Card>
+
+              <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+                <ViewShot
+                  ref={viewShotRef}
+                  options={{
+                    format: "jpg",
+                    quality: 0.9,
+                  }}
+                >
+                  <ColorMatrix
+                    matrix={concatColorMatrices(
+                      grayscale(1),
+                      contrast(1.2),
+                      brightness(1.1)
+                    )}
+                  >
+                    <Image 
+                      source={{ uri: capturedImage }} 
+                      style={styles.previewImage} 
+                      resizeMode="cover"
+                    />
+                  </ColorMatrix>
+                </ViewShot>
+              </Box>
+
+              <Box className="flex-row justify-between gap-4">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  action="negative"
+                  className="flex-1 rounded-xl"
+                  onPress={handleCancel}
+                >
+                  <X size={24} color="red" />
+                  <ButtonText>Cancel</ButtonText>
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="solid"
+                  action="primary"
+                  className="flex-1 rounded-xl"
+                  onPress={handleContinue}
+                >
+                  <Check size={24} color="white" />
+                  <ButtonText>Continue</ButtonText>
+                </Button>
+              </Box>
+            </VStack>
+          </Box>
+        </Box>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text size="xl" bold style={styles.title}>Scan Document</Text>
-      
-      <View 
-        style={styles.cameraContainer}
-        onLayout={(event) => {
-          setCameraLayout(event.nativeEvent.layout);
-        }}
-      >
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing="back"
-          onCameraReady={() => {
-            setCameraReady(true);
-          }}
-        >
-          <View style={styles.overlay}>
-            <Svg style={styles.svgOverlay}>
-              <Mask id="mask">
-                <Rect width="100%" height="100%" fill="white" />
-                <Rect
-                  x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
-                  y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
-                  width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
-                  height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
-                  fill="black"
-                />
-              </Mask>
-              <Rect
-                width="100%"
-                height="100%"
-                fill="rgba(0, 0, 0, 0.6)"
-                mask="url(#mask)"
-              />
-            </Svg>
-          </View>
-          <View 
-            style={[
-              styles.documentFrame,
-              {
-                top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
-                left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
-                width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
-                height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
-              }
-            ]}
-          />
-        </CameraView>
-      </View>
-      
-      <View style={styles.controls}>
-        <Button
-          disabled={!cameraReady}
-          onPress={handleCapture}
-          style={styles.captureButton}
-        >
-          <CameraIcon size={20} color="white" />
-          <ButtonText>Capture Document</ButtonText>
-        </Button>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
+                variant="link"
+                onPress={() => router.back()}
+                className="self-start"
+              >
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+              </Button>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Scan PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
+              </Box>
+            </Box>
+            <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
+          </Box>
 
-        {scannedPages.length > 0 && (
-          <Button
-            variant="outline"
-            onPress={() => setShowPreview(true)}
-            style={styles.previewButton}
-          >
-            <Eye size={20} />
-            <ButtonText>Preview ({scannedPages.length})</ButtonText>
-          </Button>
-        )}
-      </View>
+          <Box className="p-6 flex-1 bg-background-50">
+            <VStack space="md" className="flex-1">
+              <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+                <Box className="flex-row justify-between items-center">
+                  <Text size="sm" className="text-gray-500">
+                    Position document within the frame
+                  </Text>
+                  {scannedPages.length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-lg"
+                      onPress={() => setShowPreview(true)}
+                    >
+                      <Eye size={20} />
+                      <ButtonText>Preview ({scannedPages.length})</ButtonText>
+                    </Button>
+                  )}
+                </Box>
+              </Card>
 
-      {/* Debug view to show number of scanned pages */}
-      <Text>Scanned pages: {scannedPages.length}</Text>
-    </View>
+              <Box 
+                className="flex-1 bg-white rounded-xl overflow-hidden"
+                onLayout={(event) => {
+                  setCameraLayout(event.nativeEvent.layout);
+                }}
+              >
+                <CameraView
+                  ref={cameraRef}
+                  style={styles.camera}
+                  facing="back"
+                  onCameraReady={() => {
+                    setCameraReady(true);
+                  }}
+                >
+                  <View style={styles.overlay}>
+                    <Svg style={styles.svgOverlay}>
+                      <Mask id="mask">
+                        <Rect width="100%" height="100%" fill="white" />
+                        <Rect
+                          x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
+                          y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
+                          width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
+                          height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
+                          fill="black"
+                        />
+                      </Mask>
+                      <Rect
+                        width="100%"
+                        height="100%"
+                        fill="rgba(0, 0, 0, 0.6)"
+                        mask="url(#mask)"
+                      />
+                    </Svg>
+                  </View>
+                  <View 
+                    style={[
+                      styles.documentFrame,
+                      {
+                        top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
+                        left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
+                        width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
+                        height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
+                      }
+                    ]}
+                  />
+                </CameraView>
+              </Box>
+
+              <Box className="flex-row justify-center">
+                <Button
+                  size="xl"
+                  variant="solid"
+                  action="primary"
+                  className="rounded-full w-20 h-20"
+                  disabled={!cameraReady}
+                  onPress={handleCapture}
+                >
+                  <CameraIcon size={32} color="white" />
+                </Button>
+              </Box>
+            </VStack>
+          </Box>
+        </Box>
+      </GestureHandlerRootView>
+    </SafeAreaView>
   );
 }
 
