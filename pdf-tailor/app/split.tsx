@@ -3,14 +3,18 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from "react";
-import { FileText, Check, CheckCircle2 } from "lucide-react-native";
+import { FileText, Check, CheckCircle2, ArrowLeft, ScissorsLineDashed } from "lucide-react-native";
 import { PDFViewer } from "@/components/PDFViewer";
 import { Spinner } from "@/components/ui/spinner";
 import * as FileSystem from 'expo-file-system';
-import { Input, InputField } from "@/components/ui/input";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { PDFDocument } from 'pdf-lib';
 import * as Sharing from 'expo-sharing';
+import { router } from "expo-router";
 
 export default function Split() {
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerResult | null>(null);
@@ -146,72 +150,123 @@ export default function Split() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        gap: 20,
-      }}
-    >
-      <Text size="xl" bold>Split PDF</Text>
-      
-      <Button 
-        size="lg" 
-        variant="outline" 
-        onPress={pickDocument}
-      >
-        <FileText size={24} />
-        <ButtonText>{selectedFile ? "Select a new file" : "Select PDF"}</ButtonText>
-      </Button>
+    <Box className="flex-1 bg-background-50">
+      {/* Header */}
+      <Box className="p-4 bg-background-100 pt-16">
+        <Box className="flex-row items-center justify-between mb-4">
+          <Button
+            size="sm"
+            variant="link"
+            onPress={() => router.back()}
+            className="self-start"
+          >
+            <ArrowLeft size={24} color="#64748b" />
+            <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+          </Button>
+          <Heading size="2xl">Split PDF</Heading>
+          <Box className="w-20">
+            <Text className="hidden">Spacer for centering</Text>
+          </Box>
+        </Box>
+        <Text className="text-gray-600 text-center">Select pages to create a new PDF document</Text>
+      </Box>
 
-      {isLoading && <Spinner size="large" />}
+      <Box className="p-6 flex-1 bg-background-50">
+        {!selectedFile ? (
+          <Card 
+            size="md" 
+            variant="elevated" 
+            className="bg-white p-6 rounded-2xl items-center justify-center"
+          >
+            <VStack space="md" className="items-center">
+              <Box className="w-16 h-16 rounded-full bg-background-100 items-center justify-center mb-4">
+                <ScissorsLineDashed size={32} color="#64748b" />
+              </Box>
+              <Text className="text-gray-600 text-center mb-4">
+                Start by selecting a PDF file to split
+              </Text>
+              <Button 
+                size="lg" 
+                variant="solid"
+                action="primary"
+                className="rounded-xl"
+                onPress={pickDocument}
+              >
+                <FileText size={24} />
+                <ButtonText className="ml-2">Select PDF</ButtonText>
+              </Button>
+            </VStack>
+          </Card>
+        ) : (
+          <VStack space="md" className="flex-1">
+            <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
+              <Text size="md" className="text-gray-600">
+                Selected: {selectedFile?.assets?.[0].name}
+              </Text>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="self-start mt-2"
+                onPress={pickDocument}
+              >
+                <ButtonText>Change File</ButtonText>
+              </Button>
+            </Card>
 
-      {selectedFile?.assets && (
-        <View style={{ flex: 1 }}>
-          <Text size="md" style={{ marginBottom: 10 }}>
-            Selected: {selectedFile.assets[0].name}
-          </Text>
-          
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
-            <Button size="sm" onPress={toggleAllPages}>
-              <ButtonText>{areAllPagesSelected() ? "Deselect All" : "Select All"}</ButtonText>
-            </Button>
-          </View>
-          
-          <PDFViewer 
-            uri={selectedFile.assets[0].uri} 
-            onPageCountChange={setTotalPages}
-            renderPageIndicator={(pageNumber) => (
-              <View style={{ 
-                position: 'absolute', 
-                top: 10, 
-                right: 10, 
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255,255,255,0.7)',
-                padding: 5,
-                borderRadius: 5
-              }}>
-                <Text>Page {pageNumber}</Text>
-                {selectedPages.includes(pageNumber) && (
-                  <CheckCircle2 size={20} color="green" style={{ marginLeft: 5 }} />
-                )}
-              </View>
+            <Box className="flex-row justify-between mb-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onPress={toggleAllPages}
+                className="rounded-lg"
+              >
+                <ButtonText>{areAllPagesSelected() ? "Deselect All" : "Select All"}</ButtonText>
+              </Button>
+              
+              {selectedPages.length > 0 && (
+                <Text className="text-gray-600">
+                  {selectedPages.length} pages selected
+                </Text>
+              )}
+            </Box>
+
+            <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+              {isLoading ? (
+                <Box className="flex-1 items-center justify-center">
+                  <Spinner size="large" />
+                </Box>
+              ) : selectedFile?.assets?.[0]?.uri ? (
+                <PDFViewer 
+                  uri={selectedFile.assets[0].uri} 
+                  onPageCountChange={setTotalPages}
+                  renderPageIndicator={(pageNumber) => (
+                    <Box className="absolute top-2 right-2 flex-row items-center bg-white/70 px-3 py-1 rounded-full">
+                      <Text className="text-gray-600">Page {pageNumber}</Text>
+                      {selectedPages.includes(pageNumber) && (
+                        <CheckCircle2 size={20} color="green" style={{ marginLeft: 5 }} />
+                      )}
+                    </Box>
+                  )}
+                  onPagePress={togglePageSelection}
+                  highlightedPages={selectedPages}
+                />
+              ) : null}
+            </Box>
+
+            {selectedPages.length > 0 && (
+              <Button 
+                size="lg"
+                variant="solid"
+                action="primary"
+                className="rounded-xl"
+                onPress={handleExport}
+              >
+                <ButtonText>Export {selectedPages.length} Pages</ButtonText>
+              </Button>
             )}
-            onPagePress={togglePageSelection}
-            highlightedPages={selectedPages}
-          />
-          
-          {selectedPages.length > 0 && (
-            <Button 
-              style={{ marginTop: 10 }} 
-              onPress={handleExport}
-            >
-              <ButtonText>Export Selected Pages ({selectedPages.length})</ButtonText>
-            </Button>
-          )}
-        </View>
-      )}
-    </View>
+          </VStack>
+        )}
+      </Box>
+    </Box>
   );
 }

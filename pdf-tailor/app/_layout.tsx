@@ -18,21 +18,24 @@ export default function Layout() {
           name="split" 
           options={{ 
             title: "Split PDF",
-            presentation: "card"
+            presentation: "card",
+            headerShown: false
           }} 
         />
         <Stack.Screen 
           name="merge" 
           options={{ 
             title: "Merge PDFs",
-            presentation: "card"
+            presentation: "card",
+            headerShown: false
           }} 
         />
         <Stack.Screen 
           name="scan" 
           options={{ 
             title: "Scan to PDF",
-            presentation: "card"
+            presentation: "card",
+            headerShown: false
           }} 
         />
         </Stack>
