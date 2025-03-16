@@ -115,11 +115,11 @@ Step to implement the scan to pdf functionality:
 - Preview the scanned document
 - Save the scanned document to device storage
 
-### Phase 5: Polish and Testing
-- UI/UX improvements
-- Error handling
-- Performance optimization
-- Cross-platform testing
+### Phase 5: Polish and Testing (On going)
+- UI/UX improvements (Done✅)
+- Error handling (To do)
+- Performance optimization (To do)
+- Cross-platform testing (To do)
 
 ## Technical Considerations
 1. File Size Limitations
