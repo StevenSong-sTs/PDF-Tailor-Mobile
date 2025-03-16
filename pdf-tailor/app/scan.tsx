@@ -2,7 +2,7 @@ import { View, StyleSheet, Dimensions, Image } from "react-native";
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown, ArrowLeft } from "lucide-react-native";
+import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown } from "lucide-react-native";
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Svg, { Rect, Mask } from 'react-native-svg';
@@ -23,19 +23,15 @@ import { Toast, ToastDescription, useToast } from "@/components/ui/toast";
 import { Spinner } from '@/components/ui/spinner';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Box } from "@/components/ui/box";
-import { VStack } from "@/components/ui/vstack";
-import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
+import { router } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
 import {useFonts, Orbitron_600SemiBold} from "@expo-google-fonts/orbitron";
-import { useRouter } from "expo-router";
 
 const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
 const CONTAINER_PADDING = 20;
 
 export default function Scan() {
-  const [titleFontLoaded] = useFonts({
-    Orbitron_600SemiBold,
-  });
   const [cameraReady, setCameraReady] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
@@ -46,7 +42,9 @@ export default function Scan() {
   const [showPreview, setShowPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const toast = useToast();
-  const router = useRouter();
+  const [titleFontLoaded] = useFonts({
+    Orbitron_600SemiBold,
+  });
 
   useEffect(() => {
     return () => {
@@ -214,16 +212,11 @@ export default function Scan() {
   }) => {
     const renderRightActions = () => {
       return (
-        <Box className="h-[82px] flex items-center my-16 mr-4">
-          <Button
-            variant="solid"
-            action="negative"
-            className="w-20 h-36 rounded-lg justify-center"
-            onPress={() => removePage(item.id)}
-          >
-            <Trash2 size={20} color="white" />
-          </Button>
-        </Box>
+        <View style={styles.deleteButtonContainer}>
+          <RectButton style={styles.deleteButton} onPress={() => removePage(item.id)}>
+            <Trash2 size={24} color="white" />
+          </RectButton>
+        </View>
       );
     };
     
@@ -264,104 +257,107 @@ export default function Scan() {
 
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <Text>Requesting camera permission...</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+        <View style={styles.container}>
+          <Text>Requesting camera permission...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
   
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text>No access to camera</Text>
-        <Button onPress={requestPermission}>
-          <ButtonText>Grant Permission</ButtonText>
-        </Button>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+        <View style={styles.container}>
+          <Text>No access to camera</Text>
+          <Button onPress={requestPermission}>
+            <ButtonText>Grant Permission</ButtonText>
+          </Button>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (showPreview) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Box className="flex-1 bg-background-50">
-            {/* Header */}
-            <Box className="p-4 bg-background-100">
-              <Box className="flex-row items-center justify-between mb-2">
-                <Button
-                  size="sm"
-                  variant="link"
-                  onPress={() => router.back()}
-                  className="self-start"
-                >
-                  <ArrowLeft size={24} color="#64748b" />
-                  <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
-                </Button>
-                <Heading 
-                  size="2xl" 
-                  style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
-                >
-                  Scan PDF
-                </Heading>
-                <Box className="w-20">
-                  <Text className="hidden">Spacer for centering</Text>
-                </Box>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
+                variant="link"
+                onPress={() => router.back()}
+                className="self-start"
+              >
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+              </Button>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Scan PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
               </Box>
-              <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
             </Box>
+            <Text className="text-gray-600 text-center">Scan documents to create a PDF</Text>
+          </Box>
 
-            <Box className="p-6 flex-1 bg-background-50">
-              <VStack space="md" className="flex-1">
-                <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
-                  <Box className="flex-row justify-between items-center">
-                    <Box className="flex-1">
-                      <Text size="sm" className="text-gray-500 italic">
-                        Hold and drag to reorder. Swipe left to remove.
-                      </Text>
-                    </Box>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="rounded-lg ml-4 shrink-0"
-                      onPress={() => setShowPreview(false)}
-                    >
-                      <ButtonText>Back to Camera</ButtonText>
-                    </Button>
-                  </Box>
-                </Card>
+          {/* Wrap existing content in Box with padding */}
+          <Box className="p-6 flex-1 bg-background-50">
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <View style={styles.container}>
+                <View style={styles.titleContainer}>
+                  <Button 
+                    size="sm" 
+                    onPress={() => setShowPreview(false)}
+                    variant="outline"
+                  >
+                    <ButtonText>Back to Camera</ButtonText>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    action="primary"
+                    onPress={handleExport}
+                    disabled={isExporting || scannedPages.length === 0}
+                  >
+                    {isExporting ? (
+                      <Spinner size="small" />
+                    ) : (
+                      <>
+                        <FileDown size={20} color="white" />
+                        <ButtonText>Export PDF</ButtonText>
+                      </>
+                    )}
+                  </Button>
+                </View>
 
-                <Box className="flex-1">
+                <Text size="sm" style={styles.instructions}>
+                  Long press and drag to reorder pages
+                </Text>
+                
+                <View style={styles.pageListContainer}>
                   <DraggableFlatList
                     data={scannedPages}
                     keyExtractor={(item) => item.id}
                     renderItem={renderScannedPage}
                     onDragEnd={({ data }) => setScannedPages(data)}
-                    contentContainerStyle={{ padding: 16 }}
+                    horizontal={false}
+                    numColumns={1}
+                    contentContainerStyle={styles.pageList}
+                    activationDistance={10}
+                    dragHitSlop={{ top: 0, bottom: 0, left: 0, right: 0 }}
                   />
-                </Box>
-
-                <Button
-                  size="lg"
-                  variant="solid"
-                  action="primary"
-                  className="rounded-xl"
-                  onPress={handleExport}
-                  disabled={isExporting || scannedPages.length === 0}
-                >
-                  {isExporting ? (
-                    <Spinner size="small" />
-                  ) : (
-                    <>
-                      <FileDown size={24} color="white" />
-                      <ButtonText>Export PDF</ButtonText>
-                    </>
-                  )}
-                </Button>
-              </VStack>
-            </Box>
+                </View>
+              </View>
+            </GestureHandlerRootView>
           </Box>
-        </GestureHandlerRootView>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -392,16 +388,14 @@ export default function Scan() {
                 <Text className="hidden">Spacer for centering</Text>
               </Box>
             </Box>
-            <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
+            <Text className="text-gray-600 text-center">Scan documents to create a PDF</Text>
           </Box>
 
+          {/* Wrap existing content in Box with padding */}
           <Box className="p-6 flex-1 bg-background-50">
-            <VStack space="md" className="flex-1">
-              <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
-                <Text size="lg" bold>Review Document</Text>
-              </Card>
-
-              <Box className="flex-1 bg-white rounded-xl overflow-hidden">
+            <View style={styles.container}>
+              <Text size="xl" bold style={styles.title}>Review Document</Text>
+              <View style={styles.previewContainer}>
                 <ViewShot
                   ref={viewShotRef}
                   options={{
@@ -423,31 +417,28 @@ export default function Scan() {
                     />
                   </ColorMatrix>
                 </ViewShot>
-              </Box>
-
-              <Box className="flex-row justify-between gap-4">
+              </View>
+              <View style={styles.previewControls}>
                 <Button
-                  size="lg"
                   variant="outline"
                   action="negative"
-                  className="flex-1 rounded-xl"
+                  style={styles.previewButton} 
                   onPress={handleCancel}
                 >
-                  <X size={24} color="red" />
-                  <ButtonText>Cancel</ButtonText>
+                  <CameraIcon size={20} color="red" />
+                  <ButtonText>Recapture</ButtonText>
                 </Button>
                 <Button 
-                  size="lg"
-                  variant="solid"
-                  action="primary"
-                  className="flex-1 rounded-xl"
+                  style={styles.previewButton}
                   onPress={handleContinue}
+                  variant="solid"
+                  action="positive"
                 >
-                  <Check size={24} color="white" />
-                  <ButtonText>Continue</ButtonText>
+                  <FileText size={20} color="white" />
+                  <ButtonText>Add Page</ButtonText>
                 </Button>
-              </Box>
-            </VStack>
+              </View>
+            </View>
           </Box>
         </Box>
       </SafeAreaView>
@@ -456,118 +447,112 @@ export default function Scan() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Box className="flex-1 bg-background-50">
-          {/* Header */}
-          <Box className="p-4 bg-background-100">
-            <Box className="flex-row items-center justify-between mb-2">
-              <Button
-                size="sm"
-                variant="link"
-                onPress={() => router.back()}
-                className="self-start"
-              >
-                <ArrowLeft size={24} color="#64748b" />
-                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
-              </Button>
-              <Heading 
-                size="2xl" 
-                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
-              >
-                Scan PDF
-              </Heading>
-              <Box className="w-20">
-                <Text className="hidden">Spacer for centering</Text>
-              </Box>
+      <Box className="flex-1 bg-background-50">
+        {/* Header */}
+        <Box className="p-4 bg-background-100">
+          <Box className="flex-row items-center justify-between mb-2">
+            <Button
+              size="sm"
+              variant="link"
+              onPress={() => router.back()}
+              className="self-start"
+            >
+              <ArrowLeft size={24} color="#64748b" />
+              <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+            </Button>
+            <Heading 
+              size="2xl" 
+              style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+            >
+              Scan PDF
+            </Heading>
+            <Box className="w-20">
+              <Text className="hidden">Spacer for centering</Text>
             </Box>
-            <Text className="text-gray-600 text-center">Scan documents and convert to PDF</Text>
           </Box>
+          <Text className="text-gray-600 text-center">Scan documents to create a PDF</Text>
+        </Box>
 
-          <Box className="p-6 flex-1 bg-background-50">
-            <VStack space="md" className="flex-1">
-              <Card size="md" variant="elevated" className="bg-white p-4 rounded-xl">
-                <Box className="flex-row justify-between items-center">
-                  <Text size="sm" className="text-gray-500">
-                    Position document within the frame
-                  </Text>
-                  {scannedPages.length > 0 && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-lg"
-                      onPress={() => setShowPreview(true)}
-                    >
-                      <Eye size={20} />
-                      <ButtonText>Preview ({scannedPages.length})</ButtonText>
-                    </Button>
-                  )}
-                </Box>
-              </Card>
-
-              <Box 
-                className="flex-1 bg-white rounded-xl overflow-hidden"
-                onLayout={(event) => {
-                  setCameraLayout(event.nativeEvent.layout);
+        {/* Wrap existing content in Box with padding */}
+        <Box className="p-6 flex-1 bg-background-50">
+          <View style={styles.container}>
+            <View style={styles.titleContainer}>
+              <Text size="sm" className="text-gray-600 italic flex-1 mr-4">
+                Align document within frame and hold steady to scan
+              </Text>
+              {scannedPages.length > 0 && (
+                <Button
+                  variant="outline"
+                  onPress={() => setShowPreview(true)}
+                  size="sm"
+                >
+                  <Eye size={20} />
+                  <ButtonText>Preview ({scannedPages.length})</ButtonText>
+                </Button>
+              )}
+            </View>
+            
+            <View 
+              style={styles.cameraContainer}
+              onLayout={(event) => {
+                setCameraLayout(event.nativeEvent.layout);
+              }}
+            >
+              <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing="back"
+                onCameraReady={() => {
+                  setCameraReady(true);
                 }}
               >
-                <CameraView
-                  ref={cameraRef}
-                  style={styles.camera}
-                  facing="back"
-                  onCameraReady={() => {
-                    setCameraReady(true);
-                  }}
-                >
-                  <View style={styles.overlay}>
-                    <Svg style={styles.svgOverlay}>
-                      <Mask id="mask">
-                        <Rect width="100%" height="100%" fill="white" />
-                        <Rect
-                          x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
-                          y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
-                          width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
-                          height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
-                          fill="black"
-                        />
-                      </Mask>
+                <View style={styles.overlay}>
+                  <Svg style={styles.svgOverlay}>
+                    <Mask id="mask">
+                      <Rect width="100%" height="100%" fill="white" />
                       <Rect
-                        width="100%"
-                        height="100%"
-                        fill="rgba(0, 0, 0, 0.6)"
-                        mask="url(#mask)"
+                        x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
+                        y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
+                        width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
+                        height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
+                        fill="black"
                       />
-                    </Svg>
-                  </View>
-                  <View 
-                    style={[
-                      styles.documentFrame,
-                      {
-                        top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
-                        left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
-                        width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
-                        height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
-                      }
-                    ]}
-                  />
-                </CameraView>
-              </Box>
-
-              <Box className="flex-row justify-center">
-                <Button
-                  size="xl"
-                  variant="solid"
-                  action="primary"
-                  className="rounded-full w-20 h-20"
-                  disabled={!cameraReady}
-                  onPress={handleCapture}
-                >
-                  <CameraIcon size={32} color="white" />
-                </Button>
-              </Box>
-            </VStack>
-          </Box>
+                    </Mask>
+                    <Rect
+                      width="100%"
+                      height="100%"
+                      fill="rgba(0, 0, 0, 0.6)"
+                      mask="url(#mask)"
+                    />
+                  </Svg>
+                </View>
+                <View 
+                  style={[
+                    styles.documentFrame,
+                    {
+                      top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
+                      left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
+                      width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
+                      height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
+                    }
+                  ]}
+                />
+              </CameraView>
+            </View>
+            
+            <View style={styles.controls}>
+              <Button
+                disabled={!cameraReady}
+                onPress={handleCapture}
+                className="w-20 h-20 rounded-full items-center justify-center"
+                style={styles.captureButton}
+              >
+                <CameraIcon size={32} color="white" />
+              </Button>
+            </View>
+          </View>
         </Box>
-      </GestureHandlerRootView>
+      </Box>
     </SafeAreaView>
   );
 }
@@ -576,7 +561,6 @@ const windowWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: CONTAINER_PADDING,
     gap: 20,
   },
   title: {
@@ -599,12 +583,12 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: 10,
-    marginTop: 20,
+    marginTop: 4,
   },
   captureButton: {
-    flex: 1,
+    // Remove any existing styles that might conflict with the circular shape
   },
   previewButton: {
     flex: 1,
@@ -643,7 +627,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   thumbnailImage: {
-    width: '40%',
+    width: '60%',
     aspectRatio: 0.7071,
     borderRadius: 4,
   },
@@ -651,12 +635,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  deleteButtonContainer: {
+    width: 80,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   deleteButton: {
     backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
-    height: '100%',
+    width: 60,
+    height: 60,
+    borderRadius: 8,
   },
   previewContainer: {
     flex: 1,
@@ -676,6 +667,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+    gap: 16,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -688,5 +680,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 16,
   },
 });
