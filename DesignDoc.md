@@ -117,6 +117,7 @@ Step to implement the scan to pdf functionality:
 
 ### Phase 5: Polish and Testing (On going)
 - UI/UX improvements (Done✅)
+- Add AD Net work (To do)
 - Error handling (To do)
 - Performance optimization (To do)
 - Cross-platform testing (To do)
