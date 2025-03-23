@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Animated, TouchableOpacity, ScrollView } from "react-native";
+import { Animated, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -11,6 +11,7 @@ import { VStack } from "@/components/ui/vstack"
 import { Card } from "@/components/ui/card"
 import { Heading } from "@/components/ui/heading"
 import {useFonts, Orbitron_700Bold} from "@expo-google-fonts/orbitron"
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
 export default function Index() {
  const [titleFontLoaded] = useFonts({
@@ -54,10 +55,16 @@ export default function Index() {
   animateSequentially();
  }, []); // Empty dependency array means this runs once on mount
 
+ // Add your actual ad unit ID here
+ const adUnitId = Platform.select({
+   ios: 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy',
+   android: 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy',
+ }) ?? TestIds.BANNER;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
         showsVerticalScrollIndicator={false}
       >
         <Box className="flex-1 p-6 bg-background-0">
@@ -179,6 +186,16 @@ export default function Index() {
           </VStack>
         </Box>
       </ScrollView>
+      
+      {/* Banner Ad */}
+      <Box 
+        className="absolute bottom-0 left-0 right-0 items-center mb-2"
+      >
+        <BannerAd
+          unitId={TestIds.BANNER}
+          size={BannerAdSize.BANNER}
+        />
+      </Box>
     </SafeAreaView>
   );
 }

@@ -57,7 +57,14 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to save scanned documents."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-4830895917217834~6917149179", 
+          "iosAppId": "ca-app-pub-4830895917217834~9572200276"
+        }
+      ] 
     ],
     "experiments": {
       "typedRoutes": true
