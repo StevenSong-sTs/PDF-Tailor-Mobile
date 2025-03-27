@@ -258,9 +258,36 @@ export default function Scan() {
   if (!permission) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
-        <View style={styles.container}>
-          <Text>Requesting camera permission...</Text>
-        </View>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
+                variant="link"
+                onPress={() => router.back()}
+                className="self-start"
+              >
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+              </Button>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Scan PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
+              </Box>
+            </Box>
+            <Text className="text-gray-600 text-center">Scan documents to create a PDF</Text>
+          </Box>
+
+          <Box className="p-6 flex-1 bg-background-50 items-center justify-center">
+            <Text className="mb-4">Requesting camera permission...</Text>
+          </Box>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -268,12 +295,39 @@ export default function Scan() {
   if (!permission.granted) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
-        <View style={styles.container}>
-          <Text>No access to camera</Text>
-          <Button onPress={requestPermission}>
-            <ButtonText>Grant Permission</ButtonText>
-          </Button>
-        </View>
+        <Box className="flex-1 bg-background-50">
+          {/* Header */}
+          <Box className="p-4 bg-background-100">
+            <Box className="flex-row items-center justify-between mb-2">
+              <Button
+                size="sm"
+                variant="link"
+                onPress={() => router.back()}
+                className="self-start"
+              >
+                <ArrowLeft size={24} color="#64748b" />
+                <ButtonText className="text-gray-600 ml-1">Back</ButtonText>
+              </Button>
+              <Heading 
+                size="2xl" 
+                style={{ fontFamily: titleFontLoaded ? "Orbitron_600SemiBold" : "sans-serif" }}
+              >
+                Scan PDF
+              </Heading>
+              <Box className="w-20">
+                <Text className="hidden">Spacer for centering</Text>
+              </Box>
+            </Box>
+            <Text className="text-gray-600 text-center">Scan documents to create a PDF</Text>
+          </Box>
+
+          <Box className="p-6 flex-1 bg-background-50 items-center justify-center">
+            <Text className="mb-4">Camera permission is required to scan documents</Text>
+            <Button onPress={requestPermission} variant="solid" action="primary">
+              <ButtonText>Grant Permission</ButtonText>
+            </Button>
+          </Box>
+        </Box>
       </SafeAreaView>
     );
   }
