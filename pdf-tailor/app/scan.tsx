@@ -29,7 +29,6 @@ import { ArrowLeft } from "lucide-react-native";
 import {useFonts, Orbitron_600SemiBold} from "@expo-google-fonts/orbitron";
 
 const DOCUMENT_ASPECT_RATIO = 8.5 / 11; // Standard US Letter size
-const CONTAINER_PADDING = 20;
 
 export default function Scan() {
   const [cameraReady, setCameraReady] = useState(false);
@@ -37,6 +36,7 @@ export default function Scan() {
   const cameraRef = useRef<any>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraLayout, setCameraLayout] = useState({ width: 0, height: 0 });
+  const [frameDimensions, setFrameDimensions] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [scannedPages, setScannedPages] = useState<Array<{ id: string, uri: string }>>([]);
   const viewShotRef = useRef<ViewShot & { capture: () => Promise<string> }>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -54,6 +54,29 @@ export default function Scan() {
     };
   }, []);
 
+  const calculateFrameDimensions = (width: number, height: number) => {
+    // Define a margin factor (e.g. 90% of the available space)
+    const marginFactor = 0.9;
+    const availableWidth = width * marginFactor;
+    const availableHeight = height * marginFactor;
+    let frameWidth, frameHeight;
+    
+    // Calculate frame dimensions based on the DOCUMENT_ASPECT_RATIO
+    if (availableWidth / DOCUMENT_ASPECT_RATIO <= availableHeight) {
+      frameWidth = availableWidth;
+      frameHeight = availableWidth / DOCUMENT_ASPECT_RATIO;
+    } else {
+      frameHeight = availableHeight;
+      frameWidth = availableHeight * DOCUMENT_ASPECT_RATIO;
+    }
+    
+    // Center the frame inside the CameraLayout
+    const x = (width - frameWidth) / 2;
+    const y = (height - frameHeight) / 2;
+    
+    return { x, y, width: frameWidth, height: frameHeight };
+  };
+
   const handleCapture = async () => {
     if (!cameraRef.current || cameraLayout.width === 0 || cameraLayout.height === 0) return;
     
@@ -70,12 +93,11 @@ export default function Scan() {
       const scaleX = imageWidth / cameraLayout.width;
       const scaleY = imageHeight / cameraLayout.height;
       
-      // Calculate crop values in the actual image coordinates based on the camera view layout
-      const cropX = Math.floor((cameraLayout.width * 0.1) * scaleX);
-      const cropY = Math.floor((cameraLayout.height * 0.15) * scaleY);
-      const cropWidth = Math.floor((cameraLayout.width * 0.8) * scaleX);
-      // Using cameraLayout.width for consistency in height calculation (adjust if needed)
-      const cropHeight = Math.floor((cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO) * scaleX);
+      // Use frameDimensions for cropping
+      const cropX = Math.floor(frameDimensions.x * scaleX);
+      const cropY = Math.floor(frameDimensions.y * scaleY);
+      const cropWidth = Math.floor(frameDimensions.width * scaleX);
+      const cropHeight = Math.floor(frameDimensions.height * scaleY);
       
       // First crop the image
       const cropped = await ImageManipulator.manipulateAsync(
@@ -549,7 +571,9 @@ export default function Scan() {
             <View 
               style={styles.cameraContainer}
               onLayout={(event) => {
-                setCameraLayout(event.nativeEvent.layout);
+                const { width, height } = event.nativeEvent.layout;
+                setCameraLayout({ width, height });
+                setFrameDimensions(calculateFrameDimensions(width, height));
               }}
             >
               <CameraView
@@ -565,10 +589,10 @@ export default function Scan() {
                     <Mask id="mask">
                       <Rect width="100%" height="100%" fill="white" />
                       <Rect
-                        x={cameraLayout.width ? cameraLayout.width * 0.1 : 0}
-                        y={cameraLayout.height ? cameraLayout.height * 0.15 : 0}
-                        width={cameraLayout.width ? cameraLayout.width * 0.8 : 0}
-                        height={cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0}
+                        x={frameDimensions.x}
+                        y={frameDimensions.y}
+                        width={frameDimensions.width}
+                        height={frameDimensions.height}
                         fill="black"
                       />
                     </Mask>
@@ -584,10 +608,10 @@ export default function Scan() {
                   style={[
                     styles.documentFrame,
                     {
-                      top: cameraLayout.height ? cameraLayout.height * 0.15 : 0,
-                      left: cameraLayout.width ? cameraLayout.width * 0.1 : 0,
-                      width: cameraLayout.width ? cameraLayout.width * 0.8 : 0,
-                      height: cameraLayout.width ? cameraLayout.width * 0.8 / DOCUMENT_ASPECT_RATIO : 0,
+                      top: frameDimensions.y,
+                      left: frameDimensions.x,
+                      width: frameDimensions.width,
+                      height: frameDimensions.height,
                     }
                   ]}
                 />
