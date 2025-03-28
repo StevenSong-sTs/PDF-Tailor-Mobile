@@ -1,5 +1,5 @@
 import { View, StyleSheet, Dimensions, Image } from "react-native";
-import React, { Fragment, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { FileText, Camera as CameraIcon, Check, X, Eye, Trash2, FileDown } from "lucide-react-native";
@@ -13,7 +13,7 @@ import {
   contrast,
   brightness
 } from 'react-native-color-matrix-image-filters';
-import ViewShot, { ViewShotProperties } from "react-native-view-shot";
+import ViewShot from "react-native-view-shot";
 import * as FileSystem from 'expo-file-system';
 import { GestureHandlerRootView, TouchableOpacity, Swipeable, RectButton } from 'react-native-gesture-handler';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';

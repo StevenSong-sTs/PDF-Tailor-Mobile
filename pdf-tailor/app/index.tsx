@@ -6,7 +6,6 @@ import { Text } from "@/components/ui/text";
 import { Camera, ScissorsLineDashed, Combine } from "lucide-react-native";
 import { router } from "expo-router";
 import { Box } from "@/components/ui/box"
-import { HStack } from "@/components/ui/hstack"
 import { VStack } from "@/components/ui/vstack"
 import { Card } from "@/components/ui/card"
 import { Heading } from "@/components/ui/heading"
@@ -57,8 +56,8 @@ export default function Index() {
 
  // Add your actual ad unit ID here
  const adUnitId = Platform.select({
-   ios: 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy',
-   android: 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy',
+   ios: 'ca-app-pub-4830895917217834/7306163424',
+   android: 'ca-app-pub-4830895917217834/9055203255',
  }) ?? TestIds.BANNER;
 
   return (
@@ -192,7 +191,7 @@ export default function Index() {
         className="absolute bottom-0 left-0 right-0 items-center mb-2"
       >
         <BannerAd
-          unitId={TestIds.BANNER}
+          unitId={adUnitId}
           size={BannerAdSize.BANNER}
         />
       </Box>
