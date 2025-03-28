@@ -35,6 +35,7 @@ export default function Scan() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [cameraLayout, setCameraLayout] = useState({ width: 0, height: 0 });
   const [frameDimensions, setFrameDimensions] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [scannedPages, setScannedPages] = useState<Array<{ id: string, uri: string }>>([]);
@@ -78,8 +79,9 @@ export default function Scan() {
   };
 
   const handleCapture = async () => {
-    if (!cameraRef.current || cameraLayout.width === 0 || cameraLayout.height === 0) return;
+    if (!cameraRef.current || cameraLayout.width === 0 || cameraLayout.height === 0 || isProcessing) return;
     
+    setIsProcessing(true);
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 1.0,
@@ -116,6 +118,15 @@ export default function Scan() {
       setCapturedImage(cropped.uri);
     } catch (error) {
       console.error("Error processing image:", error);
+      toast.show({
+        render: () => (
+          <Toast action="error">
+            <ToastDescription>Failed to capture image. Please try again.</ToastDescription>
+          </Toast>
+        )
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -620,12 +631,19 @@ export default function Scan() {
             
             <View style={styles.controls}>
               <Button
-                disabled={!cameraReady}
+                disabled={!cameraReady || isProcessing}
                 onPress={handleCapture}
                 className="w-20 h-20 rounded-full items-center justify-center"
-                style={styles.captureButton}
+                style={[
+                  styles.captureButton,
+                  (!cameraReady || isProcessing) && styles.captureButtonDisabled
+                ]}
               >
-                <CameraIcon size={32} color="white" />
+                {isProcessing ? (
+                  <Spinner size="small" color="white" />
+                ) : (
+                  <CameraIcon size={32} color="white" />
+                )}
               </Button>
             </View>
           </View>
@@ -666,7 +684,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   captureButton: {
-    // Remove any existing styles that might conflict with the circular shape
+    backgroundColor: '#007AFF',
+  },
+  captureButtonDisabled: {
+    backgroundColor: '#999',
   },
   previewButton: {
     flex: 1,

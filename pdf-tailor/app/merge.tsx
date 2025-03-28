@@ -154,6 +154,15 @@ export default function Merge() {
           dialogTitle: 'Save your merged PDF',
           UTI: 'com.adobe.pdf',
         });
+        
+        // Show success message after sharing
+        toast.show({
+          render: () => (
+            <Toast action="success">
+              <ToastDescription>PDFs merged successfully!</ToastDescription>
+            </Toast>
+          )
+        });
       } else {
         throw new Error("Sharing is not available on this platform");
       }

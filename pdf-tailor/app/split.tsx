@@ -122,6 +122,15 @@ export default function Split() {
           dialogTitle: 'Save your split PDF',
           UTI: 'com.adobe.pdf',
         });
+        
+        // Show success message after sharing
+        toast.show({
+          render: () => (
+            <Toast action="success">
+              <ToastDescription>PDF split successfully!</ToastDescription>
+            </Toast>
+          )
+        });
       } else {
         throw new Error("Sharing is not available on this platform");
       }
