@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.pdf-tailor",
+      "bundleIdentifier": "com.sts.build.pdftailor",
       "minimumVersion": "15.0",
       "buildNumber": "1"
     },
@@ -25,7 +25,7 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
-      "package": "com.anonymous.pdftailor",
+      "package": "com.sts.build.pdftailor",
       "versionCode": 1
     },
     "web": {
