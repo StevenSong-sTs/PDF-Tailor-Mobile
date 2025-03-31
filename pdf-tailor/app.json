@@ -12,7 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sts.build.pdftailor",
       "minimumVersion": "15.0",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -60,13 +63,21 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-4830895917217834~6917149179", 
+          "androidAppId": "ca-app-pub-4830895917217834~6917149179",
           "iosAppId": "ca-app-pub-4830895917217834~9572200276"
         }
-      ] 
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ff67d2f2-07e5-4776-aa24-dcfd19c90c80"
+      }
     }
   }
 }
