@@ -156,40 +156,10 @@ Step to implement the scan to pdf functionality:
    - Gesture controls
    - Accessibility features
 
-## Testing Strategy
-1. Unit Testing
-   - PDF processing functions
-   - File management operations
-   - Format conversion
-
-2. Integration Testing
-   - End-to-end workflow testing
-   - Cross-platform compatibility
-   - Different file sizes and types
-
-3. User Testing
-   - Beta testing program
-   - Performance monitoring
-   - User feedback collection
-
-
-## Resources Required
-1. Development
-   - Expo development environment
-   - UI library (gluestack-ui)
-   - icon library (lucide-react-native)
-   - iOS and Android test devices
-   - PDF processing libraries
-   - Cloud conversion API credits
-
-2. Testing
-   - Various PDF test files
-   - Testing devices
-   - Beta testing platform
-
-3. Deployment
-   - Apple Developer Account
-   - Google Play Developer Account
-   - App store listing materials
+# Improvement List:
+- Add full page ads when click using tool.
+- Create an option in the page to purchase to get ads free experience
+- Make Splash screen display longer
+- Update PDF-Tailor README
 
 
