@@ -355,9 +355,9 @@ export default function Scan() {
           </Box>
 
           <Box className="p-6 flex-1 bg-background-50 items-center justify-center">
-            <Text className="mb-4">Camera permission is required to scan documents</Text>
+            <Text className="mb-4">Camera access is needed to enable the scanning feature</Text>
             <Button onPress={requestPermission} variant="solid" action="primary">
-              <ButtonText>Grant Permission</ButtonText>
+              <ButtonText>Continue</ButtonText>
             </Button>
           </Box>
         </Box>
