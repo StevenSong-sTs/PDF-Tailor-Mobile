@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Animated, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -10,7 +10,13 @@ import { VStack } from "@/components/ui/vstack"
 import { Card } from "@/components/ui/card"
 import { Heading } from "@/components/ui/heading"
 import {useFonts, Orbitron_700Bold} from "@expo-google-fonts/orbitron"
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize, TestIds, InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
+
+// Add your actual interstitial ad unit ID here
+const interstitialAdUnitId = Platform.select({
+  ios: 'ca-app-pub-4830895917217834/2240962012',
+  android: 'ca-app-pub-4830895917217834/6964898981',
+}) ?? TestIds.INTERSTITIAL;
 
 export default function Index() {
  const [titleFontLoaded] = useFonts({
@@ -55,10 +61,35 @@ export default function Index() {
  }, []); // Empty dependency array means this runs once on mount
 
  // Add your actual ad unit ID here
- const adUnitId = Platform.select({
+ const bannerAdUnitId = Platform.select({
    ios: 'ca-app-pub-4830895917217834/7306163424',
    android: 'ca-app-pub-4830895917217834/9055203255',
  }) ?? TestIds.BANNER;
+
+ // Function to show interstitial ad with 30% probability
+ const showInterstitialAd = (route: "/split" | "/merge" | "/scan") => {
+  // 30% chance to show ad
+  if (Math.random() < 0.3) {
+    const interstitial = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL);
+
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+      unsubscribeLoaded();
+      interstitial.show();
+    });
+
+    const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      unsubscribeClosed();
+      // Navigate to the route after ad is closed
+      router.push(route);
+    });
+
+    // Load the ad
+    interstitial.load();
+  } else {
+    // If no ad is shown, navigate directly
+    router.push(route);
+  }
+ };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -104,7 +135,7 @@ export default function Index() {
                   variant="solid"
                   action="primary"
                   className="self-start mt-4 rounded-lg"
-                  onPress={() => router.push("/split")}
+                  onPress={() => showInterstitialAd("/split")}
                 >
                   <ButtonText>Open Tool</ButtonText>
                 </Button>
@@ -139,7 +170,7 @@ export default function Index() {
                   variant="solid"
                   action="primary"
                   className="self-start mt-4 rounded-lg"
-                  onPress={() => router.push("/merge")}
+                  onPress={() => showInterstitialAd("/merge")}
                 >
                   <ButtonText>Open Tool</ButtonText>
                 </Button>
@@ -176,7 +207,7 @@ export default function Index() {
                   variant="solid"
                   action="primary"
                   className="self-start mt-4 rounded-lg"
-                  onPress={() => router.push("/scan")}
+                  onPress={() => showInterstitialAd("/scan")}
                 >
                   <ButtonText>Open Tool</ButtonText>
                 </Button>
@@ -191,7 +222,7 @@ export default function Index() {
         className="absolute bottom-0 left-0 right-0 items-center mb-2"
       >
         <BannerAd
-          unitId={adUnitId}
+          unitId={TestIds.BANNER}
           size={BannerAdSize.BANNER}
         />
       </Box>
