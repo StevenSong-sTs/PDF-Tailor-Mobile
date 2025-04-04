@@ -3,7 +3,7 @@ import { Animated, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { Camera, ScissorsLineDashed, Combine } from "lucide-react-native";
+import { Camera, ScissorsLineDashed, Combine, Crown } from "lucide-react-native";
 import { router } from "expo-router";
 import { Box } from "@/components/ui/box"
 import { VStack } from "@/components/ui/vstack"
@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card"
 import { Heading } from "@/components/ui/heading"
 import {useFonts, Orbitron_700Bold} from "@expo-google-fonts/orbitron"
 import { BannerAd, BannerAdSize, TestIds, InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Add your actual interstitial ad unit ID here
 const interstitialAdUnitId = Platform.select({
@@ -79,14 +80,11 @@ export default function Index() {
 
     const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
       unsubscribeClosed();
-      // Navigate to the route after ad is closed
       router.push(route);
     });
 
-    // Load the ad
     interstitial.load();
   } else {
-    // If no ad is shown, navigate directly
     router.push(route);
   }
  };
@@ -211,6 +209,40 @@ export default function Index() {
                 >
                   <ButtonText>Open Tool</ButtonText>
                 </Button>
+              </Card>
+            </TouchableOpacity>
+
+            {/* Unlock Ads Free Card */}
+            <TouchableOpacity 
+              activeOpacity={0.9}
+              onPress={() => router.push("/remove-ads")}
+            >
+              <Card size="md" variant="elevated" className="p-6 rounded-2xl overflow-hidden">
+                <LinearGradient
+                  colors={['#0054B4', '#40E0D0']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: 16,
+                  }}
+                />
+                <Box className="flex-row gap-4 relative">
+                  <VStack className="flex-1 justify-center">
+                    <Heading size="xl" className="text-white">
+                      Unlock Ads Free Experience
+                    </Heading>
+                  </VStack>
+                  <Box className="w-20 items-center justify-center">
+                    <Box className="w-15 h-15 rounded-full bg-white/20 items-center justify-center">
+                      <Crown size={40} color="#ffffff" />
+                    </Box>
+                  </Box>
+                </Box>
               </Card>
             </TouchableOpacity>
           </VStack>

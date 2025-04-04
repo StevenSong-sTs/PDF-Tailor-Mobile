@@ -162,4 +162,24 @@ Step to implement the scan to pdf functionality:
 - Make Splash screen display longer
 - Update PDF-Tailor README
 
+## In app Purchase
+
+UI requirements:
+
+1. Index.tsx:
+   - Add another card with the eye-cathing grident color backgournd. It should have a large title: "Unlock Ads Free Experience" with an icon. 
+   - This card does not need to have a `Open Tool` button like other cards
+   - Clicking any part of this card should link to a new page: `RemoveAdPage.tsx`
+2. RemoveAdPage.tsx:
+   - This page should be a new componment. Add this component to the /components folder
+   - The layour should follow the attached image 
+   - The Top shows a title, below shows a short description
+   - Below that show a attractive image, use a place holder image for now
+   - Below that show the Price 
+   - Below that show two buttons in a column: Unlock Now and restore purchase
+   - Just add the UI component, we will implement the function later.
+
+
+
+
 

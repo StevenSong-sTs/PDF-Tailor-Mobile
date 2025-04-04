@@ -40,6 +40,14 @@ export default function Layout() {
               headerShown: false,
             }} 
           />
+          <Stack.Screen 
+            name="remove-ads" 
+            options={{ 
+              title: "Remove Ads",
+              presentation: "card",
+              headerShown: false,
+            }} 
+          />
         </Stack>
       </GluestackUIProvider>
     </SafeAreaProvider>
