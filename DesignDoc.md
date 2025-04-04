@@ -179,7 +179,11 @@ UI requirements:
    - Below that show two buttons in a column: Unlock Now and restore purchase
    - Just add the UI component, we will implement the function later.
 
-
-
-
-
+Function Requirement:
+Now, let's implment the In-app purcahse function in the @remove-ads.tsx with the following requirements:
+- Let's use the expo-in-app-purcahse library
+- An in-app purchase item has already been created in the app store connect with product ID:com.sts.build.pdftailor.removeads
+- When the app starts, we should connect to the IAP service and check if this user has already purcahsed the product. If so, display a `ad free` badge next to big heading PDF Tailor in @index.tsx
+- in the @remove-ads.tsx: When user clicked the `Unlock Now` button, we should trigger a purchase to let user purchase the product.
+- in the @remove-ads.tsx: When user clicked the `Restore Purchase` button, we should check if user has purchased the product from IAP service and update the state in our app. 
+- If user has purchased the product, Do NOT show the Banner AD and the Interstitial Ad
