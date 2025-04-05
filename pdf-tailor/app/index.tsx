@@ -27,7 +27,7 @@ export default function Index() {
 
  // Get ad-free status from context
  const { isAdFree } = useInAppPurchase();
-
+ 
  // Add animation refs for each icon
  const splitShakeAnimation = useRef(new Animated.Value(0)).current;
  const mergeShakeAnimation = useRef(new Animated.Value(0)).current;
@@ -86,7 +86,7 @@ export default function Index() {
  const showInterstitialAd = (route: "/split" | "/merge" | "/scan") => {
   // 30% chance to show ad
   if (Math.random() < 0.3) {
-    const interstitial = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL);
+    const interstitial = InterstitialAd.createForAdRequest(interstitialAdUnitId);
 
     const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
       unsubscribeLoaded();
@@ -111,7 +111,7 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="flex-1 p-6 bg-background-0">
-          <Box className="flex-row items-center justify-center mb-8">
+          <Box className="items-center justify-center mb-8">
             <Heading 
               size="3xl" 
               className="text-center" 
@@ -122,7 +122,7 @@ export default function Index() {
             
             {/* Show ad-free badge if user has purchased */}
             {isAdFree && (
-              <Box className="ml-2 bg-green-100 px-2 py-1 rounded-full flex-row items-center">
+              <Box className="mt-2 bg-green-100 px-2 py-1 rounded-full flex-row items-center">
                 <ShieldCheck size={16} color="#16a34a" />
                 <Text className="text-xs text-green-700 font-bold ml-1">Ad-Free</Text>
               </Box>
@@ -282,7 +282,7 @@ export default function Index() {
           className="absolute bottom-0 left-0 right-0 items-center mb-2"
         >
           <BannerAd
-            unitId={TestIds.BANNER}
+            unitId={bannerAdUnitId}
             size={BannerAdSize.BANNER}
           />
         </Box>
