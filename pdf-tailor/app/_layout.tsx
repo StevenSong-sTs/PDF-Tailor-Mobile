@@ -1,7 +1,6 @@
+import "@/global.css";
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
-import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { InAppPurchaseProvider } from "@/context/InAppPurchaseContext";
 

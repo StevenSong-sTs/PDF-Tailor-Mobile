@@ -14,18 +14,21 @@ import { BannerAd, BannerAdSize, TestIds, InterstitialAd, AdEventType } from 're
 import LinearGradient from 'react-native-linear-gradient';
 import { useInAppPurchase } from "@/context/InAppPurchaseContext";
 
-// Add your actual interstitial ad unit ID here
 const interstitialAdUnitId = Platform.select({
   ios: 'ca-app-pub-4830895917217834/2240962012',
   android: 'ca-app-pub-4830895917217834/6964898981',
 }) ?? TestIds.INTERSTITIAL;
+
+const bannerAdUnitId = Platform.select({
+  ios: 'ca-app-pub-4830895917217834/7306163424',
+  android: 'ca-app-pub-4830895917217834/9055203255',
+}) ?? TestIds.BANNER;
 
 export default function Index() {
  const [titleFontLoaded] = useFonts({
   Orbitron_700Bold,
  })
 
- // Get ad-free status from context
  const { isAdFree } = useInAppPurchase();
  
  // Add animation refs for each icon
@@ -63,28 +66,19 @@ export default function Index() {
   };
 
   animateSequentially();
- }, []); // Empty dependency array means this runs once on mount
-
- // Add your actual ad unit ID here
- const bannerAdUnitId = Platform.select({
-   ios: 'ca-app-pub-4830895917217834/7306163424',
-   android: 'ca-app-pub-4830895917217834/9055203255',
- }) ?? TestIds.BANNER;
+ }, []);
 
  // Function to navigate to route, conditionally showing ads
  const navigateTo = (route: "/split" | "/merge" | "/scan") => {
   if (isAdFree) {
-    // If user has ad-free status, navigate directly without ads
     router.push(route);
   } else {
-    // Otherwise, show interstitial ad with 30% chance
     showInterstitialAd(route);
   }
  };
 
  // Function to show interstitial ad with 30% probability
  const showInterstitialAd = (route: "/split" | "/merge" | "/scan") => {
-  // 30% chance to show ad
   if (Math.random() < 0.3) {
     const interstitial = InterstitialAd.createForAdRequest(interstitialAdUnitId);
 
