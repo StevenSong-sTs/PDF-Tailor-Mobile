@@ -12,7 +12,7 @@ import { Heading } from "@/components/ui/heading"
 import {useFonts, Orbitron_700Bold} from "@expo-google-fonts/orbitron"
 import { BannerAd, BannerAdSize, TestIds, InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import LinearGradient from 'react-native-linear-gradient';
-import { useInAppPurchase } from "@/context/InAppPurchaseContext";
+//import { useInAppPurchase } from "@/context/InAppPurchaseContext";
 
 const interstitialAdUnitId = Platform.select({
   ios: 'ca-app-pub-4830895917217834/2240962012',
@@ -29,7 +29,9 @@ export default function Index() {
   Orbitron_700Bold,
  })
 
- const { isAdFree } = useInAppPurchase();
+ // TODO: Add InAppPurchaseLogic once the got the BN number
+ //const { isAdFree } = useInAppPurchase();
+ const isAdFree = false;
  
  // Add animation refs for each icon
  const splitShakeAnimation = useRef(new Animated.Value(0)).current;
@@ -232,7 +234,7 @@ export default function Index() {
             </TouchableOpacity>
 
             {/* Only show Unlock Ads Free card if not already ad-free */}
-            {!isAdFree && (
+            {/* {!isAdFree && (
               <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => router.push("/remove-ads")}
@@ -265,7 +267,7 @@ export default function Index() {
                   </Box>
                 </Card>
               </TouchableOpacity>
-            )}
+            )} */}
           </VStack>
         </Box>
       </ScrollView>
