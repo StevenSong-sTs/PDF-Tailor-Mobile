@@ -12,7 +12,7 @@ import { Heading } from "@/components/ui/heading"
 import {useFonts, Orbitron_700Bold} from "@expo-google-fonts/orbitron"
 import { BannerAd, BannerAdSize, TestIds, InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import LinearGradient from 'react-native-linear-gradient';
-//import { useInAppPurchase } from "@/context/InAppPurchaseContext";
+import { useInAppPurchase } from "@/context/InAppPurchaseContext";
 
 const interstitialAdUnitId = Platform.select({
   ios: 'ca-app-pub-4830895917217834/2240962012',
@@ -20,7 +20,7 @@ const interstitialAdUnitId = Platform.select({
 }) ?? TestIds.INTERSTITIAL;
 
 const bannerAdUnitId = Platform.select({
-  ios: 'ca-app-pub-4830895917217834/7306163424',
+  ios: 'ca-app-pub-4830895917217834/7504523255',
   android: 'ca-app-pub-4830895917217834/9055203255',
 }) ?? TestIds.BANNER;
 
@@ -29,9 +29,7 @@ export default function Index() {
   Orbitron_700Bold,
  })
 
- // TODO: Add InAppPurchaseLogic once the got the BN number
- //const { isAdFree } = useInAppPurchase();
- const isAdFree = false;
+ const { isAdFree } = useInAppPurchase();
  
  // Add animation refs for each icon
  const splitShakeAnimation = useRef(new Animated.Value(0)).current;
@@ -82,7 +80,7 @@ export default function Index() {
  // Function to show interstitial ad with 30% probability
  const showInterstitialAd = (route: "/split" | "/merge" | "/scan") => {
   if (Math.random() < 0.3) {
-    const interstitial = InterstitialAd.createForAdRequest(interstitialAdUnitId);
+    const interstitial = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL);
 
     const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
       unsubscribeLoaded();
@@ -233,8 +231,7 @@ export default function Index() {
               </Card>
             </TouchableOpacity>
 
-            {/* Only show Unlock Ads Free card if not already ad-free */}
-            {/* {!isAdFree && (
+            {!isAdFree && (
               <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => router.push("/remove-ads")}
@@ -267,7 +264,7 @@ export default function Index() {
                   </Box>
                 </Card>
               </TouchableOpacity>
-            )} */}
+            )}
           </VStack>
         </Box>
       </ScrollView>
@@ -278,7 +275,7 @@ export default function Index() {
           className="absolute bottom-0 left-0 right-0 items-center mb-2"
         >
           <BannerAd
-            unitId={bannerAdUnitId}
+            unitId={TestIds.BANNER}
             size={BannerAdSize.BANNER}
           />
         </Box>
